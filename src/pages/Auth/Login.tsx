@@ -1,0 +1,134 @@
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Form, Formik } from 'formik';
+import { useNavigate, Link } from 'react-router-dom';
+import { toast, Toaster } from 'react-hot-toast';
+import { Check } from 'lucide-react';
+import FormInput from '../../components/common/FormInput';
+import Button from '../../components/common/Button';
+import { loginInitValues, loginValidateSchema } from '../../utils/validation';
+import { PUBLIC_PATHS, PRIVATE_PATHS } from '../../routes/constants';
+
+const Login = () => {
+  const navigate = useNavigate();
+
+  const handleSubmit = (values: typeof loginInitValues) => {
+    // Mocking logic: test@example.com is a first-time user
+    const isFirstTime = values.email === 'test@example.com';
+
+    if (isFirstTime) {
+      toast.success('First login detected. Redirecting to change password...');
+      setTimeout(() => {
+        localStorage.setItem('temp_email', values.email);
+        navigate(PUBLIC_PATHS.CHANGE_PASSWORD);
+      }, 1500);
+      return;
+    }
+
+    toast.success('Login Successful!');
+    setTimeout(() => {
+      sessionStorage.setItem('user', JSON.stringify({ email: values.email }));
+      navigate(PRIVATE_PATHS.DASHBOARD);
+    }, 1000);
+  };
+
+  return (
+    <div className="w-full max-w-[400px] mx-auto">
+      <Toaster position="top-right" />
+      
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="mb-8"
+      >
+        <h1 className="text-[32px] font-bold text-[#101828]">Log in</h1>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.1, duration: 0.4 }}
+      >
+        <Formik
+          initialValues={loginInitValues}
+          validationSchema={loginValidateSchema}
+          onSubmit={handleSubmit}
+        >
+          {({
+            values,
+            errors,
+            touched,
+            handleChange,
+            handleBlur,
+            setFieldValue,
+            isValid,
+            dirty,
+            isSubmitting,
+          }) => (
+            <Form className="flex flex-col">
+              <FormInput
+                label="Email"
+                name="email"
+                type="email"
+                value={values.email}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={touched.email && errors.email}
+                placeholder="example@email.com"
+              />
+              
+              <FormInput
+                label="Password"
+                name="password"
+                type="password"
+                value={values.password}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={touched.password && errors.password}
+                placeholder="example@email.com"
+              />
+
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-2.5">
+                  <div className="relative flex items-center">
+                    <input 
+                      type="checkbox" 
+                      id="remember" 
+                      checked={values.rememberMe}
+                      onChange={(e) => setFieldValue('rememberMe', e.target.checked)}
+                      className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-[#D0D5DD] bg-white transition-all checked:border-primary checked:bg-primary"
+                    />
+                    <Check 
+                      className="absolute left-1/2 top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 transition-opacity peer-checked:opacity-100 pointer-events-none" 
+                      strokeWidth={3}
+                    />
+                  </div>
+                  <label htmlFor="remember" className="text-sm font-medium text-[#475467] cursor-pointer">
+                    Keep me logged in
+                  </label>
+                </div>
+                <Link 
+                  to={PUBLIC_PATHS.FORGOT_PASSWORD} 
+                  className="text-sm font-semibold text-primary hover:text-green-700 transition-colors"
+                >
+                  Forgot Password?
+                </Link>
+              </div>
+
+              <Button
+                type="submit"
+                label="Log in"
+                isLoading={isSubmitting}
+                disabled={!isValid || !dirty}
+                className="mt-4"
+              />
+            </Form>
+          )}
+        </Formik>
+      </motion.div>
+    </div>
+  );
+};
+
+export default Login;
