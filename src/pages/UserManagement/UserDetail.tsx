@@ -76,7 +76,7 @@ const TaskStatRow: React.FC<{ icon: React.ReactNode; label: string; count: numbe
   <div className="bg-white rounded-xl border border-[#F2F4F7] p-3 flex items-center justify-between shadow-sm min-w-0">
     <div className="flex items-center gap-2.5 min-w-0">
       <div className="w-8 h-8 rounded-full bg-[#067647] flex items-center justify-center text-white shrink-0">
-        {React.cloneElement(icon as React.ReactElement, { size: 16 })}
+        {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { size: 16 }) : icon}
       </div>
       <span className="text-[#344054] font-semibold text-xs truncate">{label}</span>
     </div>
