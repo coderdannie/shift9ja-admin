@@ -3,10 +3,13 @@ import { Filter, Download } from 'lucide-react';
 import Button from '../../components/common/Button';
 
 const DashboardHeader: React.FC = () => {
+  const user = JSON.parse(sessionStorage.getItem('user') || 'null');
+  const firstName = user?.firstName || 'Admin';
+
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
       <div>
-        <h1 className="text-[30px] font-bold text-[#101828]">Welcome Osteve</h1>
+        <h1 className="text-[30px] font-bold text-[#101828]">Welcome {firstName}</h1>
         <p className="text-[#475467] text-base mt-1">Here is all the information you need on Shift9ja today</p>
       </div>
       

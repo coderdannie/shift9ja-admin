@@ -48,18 +48,9 @@ interface ActionMenuProps {
   onBan: (u: User) => void;
 }
 
+import { Menu, MenuButton, MenuItem, MenuItems, Portal } from '@headlessui/react';
+
 const ActionMenu: React.FC<ActionMenuProps> = ({ user, onView, onEdit, onSuspend, onBan }) => {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
-
   const actions = [
     { label: 'View', fn: onView, color: 'text-[#344054]' },
     { label: 'Edit', fn: onEdit, color: 'text-primary' },
@@ -68,32 +59,40 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ user, onView, onEdit, onSuspend
   ];
 
   return (
-    <div className="relative" ref={ref}>
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-      >
-        <MoreVertical size={18} className="text-[#667085]" />
-      </button>
-      {open && (
-        <div className="absolute right-0 top-9 z-10 bg-white border border-[#F2F4F7] rounded-xl shadow-lg w-36 py-1 overflow-hidden">
-          {actions.map(({ label, fn, color }) => (
-            <button
-              key={label}
-              onClick={() => { fn(user); setOpen(false); }}
-              className={`w-full text-left px-4 py-2.5 text-sm font-medium hover:bg-gray-50 transition-colors ${color}`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      )}
+    <div className="flex justify-center">
+      <Menu as="div" className="relative inline-block text-left" aria-label="User actions">
+        <MenuButton className="p-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none">
+          <MoreVertical size={18} className="text-[#667085]" />
+        </MenuButton>
+
+        <Portal>
+          <MenuItems
+            anchor="bottom end"
+            className="z-[9999] mt-1 w-36 origin-top-right rounded-xl border border-[#F2F4F7] bg-white py-1 shadow-lg  focus:outline-none transition duration-100 ease-out data-[closed]:scale-95 data-[closed]:opacity-0"
+          >
+            {actions.map(({ label, fn, color }) => (
+              <MenuItem key={label}>
+                {({ focus }) => (
+                  <button
+                    onClick={() => fn(user)}
+                    className={`${
+                      focus ? 'bg-gray-50' : ''
+                    } flex w-full items-center px-4 py-2.5 text-sm font-medium transition-colors ${color}`}
+                  >
+                    {label}
+                  </button>
+                )}
+              </MenuItem>
+            ))}
+          </MenuItems>
+        </Portal>
+      </Menu>
     </div>
   );
 };
 
-const CLIENT_HEADERS = ['Full Name', 'Email', 'Phone number', 'City', 'Task posted', 'Dispute count', 'Status', 'Actions'];
-const HELPER_HEADERS = ['Full Name', 'Email', 'Phone number', 'City', 'Tasks completed', 'Dispute count', 'Status', 'Actions'];
+const CLIENT_HEADERS = ['Full Name', 'Email', 'Phone number', 'City', 'Task posted', 'Dispute count', 'KYC status', 'Actions'];
+const HELPER_HEADERS = ['Full Name', 'Email', 'Phone number', 'City', 'Tasks completed', 'Dispute count', 'KYC status', 'Actions'];
 
 const UserTable: React.FC<UserTableProps> = ({ users, type, isLoading = false, onView, onEdit, onSuspend, onBan }) => {
   const isClient = type === 'client';

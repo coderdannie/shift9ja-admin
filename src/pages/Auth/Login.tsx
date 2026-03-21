@@ -9,27 +9,40 @@ import Button from '../../components/common/Button';
 import { loginInitValues, loginValidateSchema } from '../../utils/validation';
 import { PUBLIC_PATHS, PRIVATE_PATHS } from '../../routes/constants';
 
+import { useLoginAdmin } from '../../services/query/auth';
+
 const Login = () => {
   const navigate = useNavigate();
+  const { mutate: login, isPending: isLoggingIn } = useLoginAdmin({
+    onSuccess: (response: any) => {
+      if (response.success) {
+        toast.success(response.message || 'Login Successful!');
+        // Store both user data and accessToken
+        const userData = {
+          ...response.data,
+          accessToken: response.accessToken
+        };
+        sessionStorage.setItem('user', JSON.stringify(userData));
+        
+        // Navigation after successful login
+        setTimeout(() => {
+          navigate(PRIVATE_PATHS.DASHBOARD);
+        }, 1000);
+      } else {
+        toast.error(response.message || 'Login failed');
+      }
+    },
+    onError: (error: any) => {
+      const message = error?.response?.data?.message || 'Something went wrong. Please try again.';
+      toast.error(message);
+    }
+  });
 
   const handleSubmit = (values: typeof loginInitValues) => {
-    // Mocking logic: test@example.com is a first-time user
-    const isFirstTime = values.email === 'test@example.com';
-
-    if (isFirstTime) {
-      toast.success('First login detected. Redirecting to change password...');
-      setTimeout(() => {
-        localStorage.setItem('temp_email', values.email);
-        navigate(PUBLIC_PATHS.CHANGE_PASSWORD);
-      }, 1500);
-      return;
-    }
-
-    toast.success('Login Successful!');
-    setTimeout(() => {
-      sessionStorage.setItem('user', JSON.stringify({ email: values.email }));
-      navigate(PRIVATE_PATHS.DASHBOARD);
-    }, 1000);
+    login({
+      email: values.email,
+      password: values.password
+    });
   };
 
   return (
@@ -119,7 +132,7 @@ const Login = () => {
               <Button
                 type="submit"
                 label="Log in"
-                isLoading={isSubmitting}
+                isLoading={isLoggingIn}
                 disabled={!isValid || !dirty}
                 className="mt-4"
               />

@@ -5,82 +5,116 @@ import StatCard from '../../Modules/Dashboard/StatCard';
 import ActivityLog from '../../Modules/Dashboard/ActivityLog';
 import CriticalActions from '../../Modules/Dashboard/CriticalActions';
 import TopRatedList from '../../Modules/Dashboard/TopRatedList';
+import { 
+  useGetDashboardSummary, 
+  useGetTopUsers,
+  useGetDashboardAlerts,
+  useGetPlatformActivity
+} from '../../services/query/dashboard';
 
 const Dashboard = () => {
-  const clients = [
-    { id: '1', name: 'Tunde Adewale', count: 27, rating: 4.7, avatar: 'https://i.pravatar.cc/150?u=1' },
-    { id: '2', name: 'Tunde Adewale', count: 27, rating: 4.7, avatar: 'https://i.pravatar.cc/150?u=2' },
-    { id: '3', name: 'Tunde Adewale', count: 27, rating: 4.7, avatar: 'https://i.pravatar.cc/150?u=3' },
-    { id: '4', name: 'Tunde Adewale', count: 27, rating: 4.7, avatar: 'https://i.pravatar.cc/150?u=4' },
-    { id: '5', name: 'Tunde Adewale', count: 27, rating: 4.7, avatar: 'https://i.pravatar.cc/150?u=5' },
+  const { data: summaryData, isPending: isLoadingSummary } = useGetDashboardSummary();
+  const { data: topUsersData, isPending: isLoadingTopUsers } = useGetTopUsers();
+  const { data: alertsData, isPending: isLoadingAlerts } = useGetDashboardAlerts();
+
+  const statsResponse = summaryData?.data;
+  const topClients = topUsersData?.data?.topRatedClients || [];
+  const topHelpers = topUsersData?.data?.topRatedHelpers || [];
+  const criticalActions = alertsData?.data || { openDisputes: 0 };
+
+  const isLoading = isLoadingSummary || isLoadingTopUsers || isLoadingAlerts;
+
+  const formattedStats = [
+    { 
+      title: 'Total Users', 
+      value: statsResponse?.totalUsers?.toLocaleString() || '0', 
+      icon: Users,
+      color: 'text-green-600',
+      bgColor: 'bg-green-50'
+    },
+    { 
+      title: 'Active Tasks', 
+      value: statsResponse?.activeTasks?.toLocaleString() || '0', 
+      icon: ClipboardList,
+      color: 'text-green-600',
+      bgColor: 'bg-green-50'
+    },
+    { 
+      title: 'Total Escrow Balance', 
+      value: `₦${statsResponse?.totalEscrowBalance?.toLocaleString() || '0'}`, 
+      icon: Wallet,
+      color: 'text-green-600',
+      bgColor: 'bg-green-50'
+    },
+    { 
+      title: 'Revenue (Platform Fees)', 
+      value: `₦${statsResponse?.revenue?.toLocaleString() || '0'}`, 
+      icon: Banknote,
+      color: 'text-green-600',
+      bgColor: 'bg-green-50'
+    },
+    { 
+      title: 'Completed Tasks', 
+      value:   statsResponse?.totalTasksCompleted?.toLocaleString() || '0',
+      icon: CheckCircle,
+      color: 'text-green-600',
+      bgColor: 'bg-green-50'
+    },
   ];
 
-  const helpers = [
-    { id: '1', name: 'Tunde Adewale', count: 27, rating: 4.7, avatar: 'https://i.pravatar.cc/150?u=6', isVerified: true },
-    { id: '2', name: 'Tunde Adewale', count: 27, rating: 4.7, avatar: 'https://i.pravatar.cc/150?u=7', isVerified: true },
-    { id: '3', name: 'Tunde Adewale', count: 27, rating: 4.7, avatar: 'https://i.pravatar.cc/150?u=8', isVerified: true },
-    { id: '4', name: 'Tunde Adewale', count: 27, rating: 4.7, avatar: 'https://i.pravatar.cc/150?u=9', isVerified: true },
-  ];
+  const mapUserToRatedItem = (user: any) => ({
+    id: user.uuid,
+    name: `${user.firstName} ${user.lastName}`,
+    count: user.profile?.tasksPostedCount || user.profile?.tasksCompletedCount || 0,
+    rating: parseFloat(user.profile?.rating || '0'),
+    avatar: user.avatarUrl || `https://ui-avatars.com/api/?name=${user.firstName}+${user.lastName}&background=random`,
+    isVerified: user.profile?.verificationStatus === 'verified'
+  });
 
   return (
     <div className="flex flex-col gap-8">
       <DashboardHeader />
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-        <StatCard 
-          title="Total Users" 
-          value="12,842" 
-          icon={Users} 
-          iconColor="text-green-600" 
-          iconBgColor="bg-green-50" 
-        />
-        <StatCard 
-          title="Active Tasks" 
-          value="486" 
-          icon={ClipboardList} 
-          iconColor="text-green-600" 
-          iconBgColor="bg-green-50" 
-        />
-        <StatCard 
-          title="Total Escrow Balance" 
-          value="#198,900" 
-          icon={Wallet} 
-          iconColor="text-green-600" 
-          iconBgColor="bg-green-50" 
-        />
-        <StatCard 
-          title="Revenue (Platform Fees)" 
-          value="#128,750" 
-          icon={Banknote} 
-          iconColor="text-green-600" 
-          iconBgColor="bg-green-50" 
-        />
-        <StatCard 
-          title="Completed Tasks" 
-          value="1,204" 
-          icon={CheckCircle} 
-          iconColor="text-green-600" 
-          iconBgColor="bg-green-50" 
-        />
-      </div>
+      {isLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 animate-pulse">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-32 bg-gray-100 rounded-xl"></div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+          {formattedStats.map((stat, index) => (
+            <StatCard 
+              key={index}
+              title={stat.title} 
+              value={stat.value} 
+              icon={stat.icon} 
+              iconColor={stat.color} 
+              iconBgColor={stat.bgColor} 
+            />
+          ))}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         <div className="xl:col-span-2 flex flex-col gap-0">
           <ActivityLog />
-          <CriticalActions />
+          <CriticalActions disputes={criticalActions?.openDisputes || 0} />
         </div>
         
         <div className="flex flex-col gap-8">
           <TopRatedList 
             title="Top Rated Clients" 
-            items={clients} 
+            items={topClients.map(mapUserToRatedItem)} 
             countLabel="tasks posted" 
+            isLoading={isLoading}
           />
           <TopRatedList 
             title="Top Rated Helpers" 
-            items={helpers} 
+            items={topHelpers.map(mapUserToRatedItem)} 
             countLabel="tasks completed" 
             showVerified 
+            isLoading={isLoading}
           />
         </div>
       </div>

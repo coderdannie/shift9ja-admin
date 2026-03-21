@@ -2,35 +2,45 @@ import React, { useState } from 'react';
 import { Plus, Shield, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import RoleTable from '../../Modules/Admins/RoleTable';
-import type { Role } from '../../Modules/Admins/RoleTable';
 import { PRIVATE_PATHS } from '../../routes/constants';
 import ConfirmModal from '../../components/common/ConfirmModal';
 
-const MOCK_ROLES: Role[] = [
-  { id: '1', name: 'Super Admin', adminCount: 2, permissions: ['all'] },
-  { id: '2', name: 'Admin', adminCount: 5, permissions: ['view_users', 'edit_users', 'view_tasks'] },
-  { id: '3', name: 'Moderator', adminCount: 3, permissions: ['view_tasks', 'edit_tasks'] },
-  { id: '4', name: 'Support', adminCount: 8, permissions: ['view_users', 'view_notifications'] },
-];
+import { useGetRoles, useDeleteRole } from '../../services/query/adminMgt';
+import { toast, Toaster } from 'react-hot-toast';
 
 const ManageRoles: React.FC = () => {
   const navigate = useNavigate();
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [roleToDelete, setRoleToDelete] = useState<Role | null>(null);
+  const { data: rolesData, isPending: isLoading, refetch } = useGetRoles();
+  const { mutate: deleteRole, isPending: isDeleting } = useDeleteRole();
 
-  const handleDeleteClick = (role: Role) => {
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [roleToDelete, setRoleToDelete] = useState<any | null>(null);
+
+  const roles = rolesData?.data || [];
+
+  const handleDeleteClick = (role: any) => {
     setRoleToDelete(role);
     setIsDeleteModalOpen(true);
   };
 
   const confirmDelete = () => {
-    console.log('Deleting role:', roleToDelete?.name);
-    setIsDeleteModalOpen(false);
-    setRoleToDelete(null);
+    if (!roleToDelete) return;
+    deleteRole(roleToDelete.uuid, {
+      onSuccess: () => {
+        toast.success('Role deleted successfully');
+        setIsDeleteModalOpen(false);
+        setRoleToDelete(null);
+        refetch();
+      },
+      onError: (error: any) => {
+        toast.error(error?.response?.data?.message || 'Failed to delete role');
+      }
+    });
   };
 
   return (
     <div className="flex flex-col gap-8 w-full py-4 px-4 sm:px-6">
+      <Toaster position="top-right" />
       {/* Breadcrumbs/Back Navigation */}
       <button 
         onClick={() => navigate(PRIVATE_PATHS.ADMINS)}
@@ -63,9 +73,10 @@ const ManageRoles: React.FC = () => {
       {/* Roles Table Container */}
       <div className="bg-white rounded-3xl border border-[#F2F4F7] shadow-sm overflow-hidden min-h-[500px] p-6">
         <RoleTable 
-          roles={MOCK_ROLES} 
-          onEdit={(role) => navigate(`/admins/roles/${role.id}`)}
+          roles={roles} 
+          onEdit={(role) => navigate(PRIVATE_PATHS.EDIT_ROLE.replace(':id', role.uuid))}
           onDelete={handleDeleteClick}
+          isLoading={isLoading}
         />
       </div>
 
@@ -75,9 +86,10 @@ const ManageRoles: React.FC = () => {
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={confirmDelete}
         title="Delete Role"
-        description={`Are you sure you want to delete the "${roleToDelete?.name}" role? This might affect ${roleToDelete?.adminCount} admins assigned to this role.`}
-        confirmLabel="Delete Role"
+        description={`Are you sure you want to delete the "${roleToDelete?.name}" role? This might affect ${roleToDelete?.adminsCount || 0} admins assigned to this role.`}
+        confirmLabel={isDeleting ? 'Deleting...' : 'Delete Role'}
         variant="danger"
+        isLoading={isDeleting}
       />
     </div>
   );

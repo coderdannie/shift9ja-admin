@@ -21,13 +21,26 @@ const UserStatCard: React.FC<UserStatCardProps> = ({ title, value, icon: Icon })
 
 interface UserStatsBarProps {
   stats: { title: string; value: string; icon: LucideIcon }[];
+  isLoading?: boolean;
 }
 
-const UserStatsBar: React.FC<UserStatsBarProps> = ({ stats }) => (
+const UserStatsBar: React.FC<UserStatsBarProps> = ({ stats, isLoading }) => (
   <div className="flex flex-col sm:flex-row gap-5">
-    {stats.map((stat) => (
-      <UserStatCard key={stat.title} {...stat} />
-    ))}
+    {isLoading ? (
+      [...Array(4)].map((_, i) => (
+        <div key={i} className="bg-white p-5 rounded-2xl border border-[#F2F4F7] flex flex-col gap-4 shadow-sm flex-1 animate-pulse">
+          <div className="w-11 h-11 rounded-full bg-gray-100" />
+          <div className="flex flex-col gap-2">
+            <div className="h-4 bg-gray-100 rounded w-1/2" />
+            <div className="h-8 bg-gray-100 rounded w-3/4" />
+          </div>
+        </div>
+      ))
+    ) : (
+      stats.map((stat) => (
+        <UserStatCard key={stat.title} {...stat} />
+      ))
+    )}
   </div>
 );
 

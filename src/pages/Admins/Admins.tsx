@@ -2,65 +2,102 @@ import React, { useState, useMemo } from 'react';
 import { Search, UserPlus, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AdminTable from '../../Modules/Admins/AdminTable';
-import type { Admin } from '../../Modules/Admins/AdminTable';
 import ConfirmModal from '../../components/common/ConfirmModal';
 import InviteAdminDrawer from '../../Modules/Admins/InviteAdminDrawer';
 import EditAdminDrawer from '../../Modules/Admins/EditAdminDrawer';
 import { PRIVATE_PATHS } from '../../routes/constants';
-
-const MOCK_ADMINS: Admin[] = [
-// ... existing mock data
-];
+import { useGetAdmins, useDeleteAdmin, useToggleAdminStatus } from '../../services/query/adminMgt';
+import { toast, Toaster } from 'react-hot-toast';
+import type { AdminUser } from '../../types/admin';
 
 const AdminsPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-// ...
+  const { data: adminsData, isPending: isLoading, refetch } = useGetAdmins();
+  const { mutate: deleteAdmin, isPending: isDeleting } = useDeleteAdmin();
+  const { mutate: toggleStatus, isPending: isToggling } = useToggleAdminStatus();
+
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isToggleModalOpen, setIsToggleModalOpen] = useState(false);
   const [isInviteDrawerOpen, setIsInviteDrawerOpen] = useState(false);
   const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
-  const [selectedAdmin, setSelectedAdmin] = useState<Admin | null>(null);
-  const [adminToDelete, setAdminToDelete] = useState<Admin | null>(null);
+  const [selectedAdmin, setSelectedAdmin] = useState<any | null>(null);
+  const [adminToDelete, setAdminToDelete] = useState<any | null>(null);
+  const [adminToToggle, setAdminToToggle] = useState<any | null>(null);
+
+  const admins = useMemo(() => {
+    return (adminsData?.data || []).map((admin: AdminUser) => ({
+      id: admin.uuid,
+      firstName: admin.firstName,
+      lastName: admin.lastName,
+      email: admin.email,
+      role: admin.roles && admin.roles.length > 0 ? admin.roles[0].name : 'No Role',
+      status: (admin.isActive ? 'active' : 'inactive') as 'active' | 'inactive',
+      avatar: admin.avatarUrl,
+    }));
+  }, [adminsData]);
 
   const filteredAdmins = useMemo(() => {
-    return MOCK_ADMINS.filter((admin) => {
+    return admins.filter((admin) => {
       const fullName = `${admin.firstName} ${admin.lastName}`.toLowerCase();
       const email = admin.email.toLowerCase();
       const query = searchQuery.toLowerCase();
       return fullName.includes(query) || email.includes(query);
     });
-  }, [searchQuery]);
+  }, [searchQuery, admins]);
 
-  const handleEditClick = (admin: Admin) => {
+  const handleViewClick = (admin: any) => {
+    navigate(`/admins/${admin.id}`);
+  };
+
+  const handleEditClick = (admin: any) => {
     setSelectedAdmin(admin);
     setIsEditDrawerOpen(true);
   };
 
-  const handleDeleteClick = (admin: Admin) => {
+  const handleDeleteClick = (admin: any) => {
     setAdminToDelete(admin);
     setIsDeleteModalOpen(true);
   };
 
-  const handleInviteAdmin = (data: any) => {
-    console.log('Inviting Admin:', data);
-    setIsInviteDrawerOpen(false);
-  };
-
-  const handleUpdateAdmin = (data: any) => {
-    console.log('Updating Admin:', data);
-    setIsEditDrawerOpen(false);
-    setSelectedAdmin(null);
-  };
-
   const confirmDelete = () => {
-    // In a real app, we'd call the delete API here
-    console.log(`Deleting admin: ${adminToDelete?.firstName} ${adminToDelete?.lastName}`);
-    setIsDeleteModalOpen(false);
-    setAdminToDelete(null);
+    if (!adminToDelete) return;
+    
+    deleteAdmin(adminToDelete.id, {
+      onSuccess: () => {
+        toast.success('Admin deleted successfully');
+        setIsDeleteModalOpen(false);
+        setAdminToDelete(null);
+      },
+      onError: (error: any) => {
+        toast.error(error?.response?.data?.message || 'Failed to delete admin');
+      }
+    });
+  };
+
+  const handleToggleStatus = (admin: any) => {
+    setAdminToToggle(admin);
+    setIsToggleModalOpen(true);
+  };
+
+  const confirmToggleStatus = () => {
+    if (!adminToToggle) return;
+    
+    toggleStatus(adminToToggle.id, {
+        onSuccess: () => {
+            toast.success(`Admin ${adminToToggle.status === 'active' ? 'deactivated' : 'activated'} successfully`);
+            setIsToggleModalOpen(false);
+            setAdminToToggle(null);
+        },
+        onError: (error: any) => {
+            toast.error(error?.response?.data?.message || 'Failed to toggle status');
+        }
+    });
   };
 
   return (
     <div className="flex flex-col gap-8 w-full py-4 px-4 sm:px-6">
+      <Toaster position="top-right" />
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -108,8 +145,11 @@ const AdminsPage: React.FC = () => {
         <div className="p-6">
           <AdminTable 
             admins={filteredAdmins} 
+            onView={handleViewClick}
             onEdit={handleEditClick}
             onDelete={handleDeleteClick}
+            onToggleStatus={handleToggleStatus}
+            isLoading={isLoading}
           />
         </div>
       </div>
@@ -118,7 +158,7 @@ const AdminsPage: React.FC = () => {
       <InviteAdminDrawer 
         isOpen={isInviteDrawerOpen}
         onClose={() => setIsInviteDrawerOpen(false)}
-        onInvite={handleInviteAdmin}
+        onSuccess={() => refetch()} 
       />
 
       {/* Edit Admin Drawer */}
@@ -128,7 +168,6 @@ const AdminsPage: React.FC = () => {
             setIsEditDrawerOpen(false);
             setSelectedAdmin(null);
         }}
-        onUpdate={handleUpdateAdmin}
         admin={selectedAdmin}
       />
 
@@ -139,8 +178,21 @@ const AdminsPage: React.FC = () => {
         onConfirm={confirmDelete}
         title="Delete Admin"
         description={`Are you sure you want to delete ${adminToDelete?.firstName} ${adminToDelete?.lastName}? This action cannot be undone and they will lose all administrative access.`}
-        confirmLabel="Delete"
+        confirmLabel={isDeleting ? "Deleting..." : "Delete"}
         variant="danger"
+        isLoading={isDeleting}
+      />
+
+      {/* Toggle Status Confirmation Modal */}
+      <ConfirmModal 
+        isOpen={isToggleModalOpen}
+        onClose={() => setIsToggleModalOpen(false)}
+        onConfirm={confirmToggleStatus}
+        title={`${adminToToggle?.status === 'active' ? 'Deactivate' : 'Activate'} Admin Account`}
+        description={`Are you sure you want to ${adminToToggle?.status === 'active' ? 'deactivate' : 'activate'} ${adminToToggle?.firstName} ${adminToToggle?.lastName}? ${adminToToggle?.status === 'active' ? 'The user will no longer be able to access the dashboard.' : 'Access will be restored immediately.'}`}
+        confirmLabel={isToggling ? "Processing..." : (adminToToggle?.status === 'active' ? "Confirm Deactivation" : "Confirm Activation")}
+        variant={adminToToggle?.status === 'active' ? "warning" : "info"}
+        isLoading={isToggling}
       />
     </div>
   );

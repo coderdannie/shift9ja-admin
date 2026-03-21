@@ -18,25 +18,25 @@ interface ConfirmModalProps {
 }
 
 const variantStyles: Record<ConfirmModalVariant, {
-  icon: string; iconBg: string; confirmVariant: 'primary' | 'secondary' | 'outline'; confirmClass: string;
+  icon: string; iconBg: string; confirmVariant: 'primary' | 'secondary' | 'outline' | 'danger'; confirmClass: string;
 }> = {
   danger: {
-    icon: 'text-red-600',
-    iconBg: 'bg-red-50',
-    confirmVariant: 'primary',
-    confirmClass: '!bg-red-600 hover:!bg-red-700',
+    icon: 'text-[#D92D20]',
+    iconBg: 'bg-[#FEF3F2]',
+    confirmVariant: 'danger',
+    confirmClass: 'shadow-lg shadow-[#D92D20]/20',
   },
   warning: {
-    icon: 'text-amber-500',
-    iconBg: 'bg-amber-50',
+    icon: 'text-[#F79009]',
+    iconBg: 'bg-[#FFFAEB]',
     confirmVariant: 'primary',
-    confirmClass: '!bg-amber-500 hover:!bg-amber-600',
+    confirmClass: '!bg-[#F79009] !border-[#F79009] hover:!bg-[#DC6803] shadow-lg shadow-[#F79009]/20',
   },
   info: {
     icon: 'text-primary',
-    iconBg: 'bg-green-50',
+    iconBg: 'bg-[#F0F9FF]',
     confirmVariant: 'primary',
-    confirmClass: '',
+    confirmClass: 'shadow-lg shadow-primary/20',
   },
 };
 
@@ -106,7 +106,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
                 </div>
 
                 {/* Actions */}
-                <div className="mt-8 flex items-center gap-3">
+                <div className="mt-8 grid items-center gap-3">
                   <Button
                     label={cancelLabel}
                     variant="outline"

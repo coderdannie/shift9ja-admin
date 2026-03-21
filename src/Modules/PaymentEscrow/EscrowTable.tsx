@@ -9,7 +9,7 @@ export interface EscrowTransaction {
   amount: string;
   client: string;
   helper: string;
-  status: 'in_dispute' | 'completed' | 'pending_release';
+  status: 'in_dispute' | 'completed' | 'pending_release' | 'success' | 'pending' | 'failed';
 }
 
 interface EscrowTableProps {
@@ -22,6 +22,10 @@ const statusMap = {
   in_dispute: { label: 'In dispute', dot: 'bg-red-500', bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' },
   completed: { label: 'Completed', dot: 'bg-green-500', bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' },
   pending_release: { label: 'Pending Release', dot: 'bg-amber-500', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
+  // API Transaction Statuses
+  success: { label: 'Success', dot: 'bg-green-500', bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' },
+  pending: { label: 'Pending', dot: 'bg-amber-500', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
+  failed: { label: 'Failed', dot: 'bg-red-500', bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' },
 };
 
 const StatusBadge: React.FC<{ status: EscrowTransaction['status'] }> = ({ status }) => {

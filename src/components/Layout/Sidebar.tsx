@@ -27,8 +27,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const menuItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: PRIVATE_PATHS.DASHBOARD },
     { label: 'User Management', icon: Users, path: PRIVATE_PATHS.USER_MANAGEMENT },
-    { label: 'Task Management', icon: Briefcase, path: PRIVATE_PATHS.TASK_MANAGEMENT },
     { label: 'Payment & Escrow', icon: Wallet, path: PRIVATE_PATHS.PAYMENT_ESCROW },
+    { label: 'Task Management', icon: Briefcase, path: PRIVATE_PATHS.TASK_MANAGEMENT },
     { label: 'Admins', icon: Shield, path: PRIVATE_PATHS.ADMINS },
     { label: 'Dispute & Reports', icon: AlertCircle, path: PRIVATE_PATHS.DISPUTE_REPORTS },
     { label: 'Notifications', icon: Bell, path: PRIVATE_PATHS.NOTIFICATIONS },
@@ -86,22 +86,29 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         </nav>
 
         <div className="p-4 border-t border-[#EAECF0]">
-          <div className="flex items-center gap-3 p-2">
-            <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
-               <div className="w-full h-full bg-primary/10 flex items-center justify-center text-primary font-bold">OS</div>
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-medium truncate">OSTEVE</p>
-              <p className="text-xs text-gray-500 truncate">osteve@shift9ja.com</p>
-            </div>
-            <button 
-              onClick={handleLogout}
-              className="text-gray-400 hover:text-red-500 transition-colors"
-              title="Logout"
-            >
-              <LogOut size={18} />
-            </button>
-          </div>
+          {(() => {
+            const user = JSON.parse(sessionStorage.getItem('user') || 'null');
+            return (
+              <div className="flex items-center gap-3 p-2">
+                <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                   <div className="w-full h-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                     {user?.firstName?.[0] || 'A'}
+                   </div>
+                </div>
+                <div className="flex-1 overflow-hidden">
+                  <p className="text-sm font-medium truncate">{user ? `${user.firstName} ${user.lastName}` : 'Admin'}</p>
+                  <p className="text-xs text-gray-500 truncate">{user?.email || 'admin@shift9ja.com'}</p>
+                </div>
+                <button 
+                  onClick={handleLogout}
+                  className="text-gray-400 hover:text-red-500 transition-colors"
+                  title="Logout"
+                >
+                  <LogOut size={18} />
+                </button>
+              </div>
+            );
+          })()}
         </div>
       </aside>
     </>

@@ -1,0 +1,37 @@
+import * as API from '../url';
+import axiosInstance from '../axiosInstance';
+import type { ApiResponse, PaginatedData, UserListItem, UserStats, User } from '../../types';
+
+export const getUsers = async ({ queryKey }: any): Promise<ApiResponse<PaginatedData<UserListItem>>> => {
+  const [, page, limit, searchTerm, role, status, city] = queryKey;
+
+  const params = new URLSearchParams();
+
+  if (page) params.append('page', page);
+  if (limit) params.append('limit', limit);
+  if (searchTerm) params.append('search', searchTerm);
+  if (role) params.append('role', role);
+  if (status) params.append('status', status);
+  if (city) params.append('city', city);
+
+  const res = await axiosInstance.get(`${API.GET_USERS}?${params.toString()}`);
+  return res.data;
+};
+
+export const getUserStats = async ({ queryKey }: any): Promise<ApiResponse<UserStats>> => {
+  const [, role] = queryKey;
+
+  const params = new URLSearchParams();
+
+  if (role) params.append('role', role);
+
+  const res = await axiosInstance.get(
+    `${API.GET_USER_STATS}?${params.toString()}`
+  );
+  return res.data;
+};
+
+export const getUser = async (uuid: string): Promise<ApiResponse<User>> => {
+  const res = await axiosInstance.get(API.GET_USER(uuid));
+  return res.data;
+};

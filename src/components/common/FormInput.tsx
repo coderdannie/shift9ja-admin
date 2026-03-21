@@ -10,7 +10,7 @@ interface FormInputProps {
   onBlur: (e: any) => void;
   error?: any;
   size?: string;
-  dis?: boolean;
+  disabled?: boolean;
   readOnly?: boolean;
   placeholder?: string;
   inputMode?: "none" | "text" | "tel" | "url" | "email" | "numeric" | "decimal" | "search";
@@ -27,7 +27,7 @@ const FormInput: React.FC<FormInputProps> = ({
   onBlur,
   error,
   size,
-  dis,
+  disabled,
   readOnly,
   placeholder,
   inputMode,
@@ -63,7 +63,7 @@ const FormInput: React.FC<FormInputProps> = ({
           id={name}
           onBlur={onBlur}
           readOnly={readOnly}
-          disabled={dis}
+          disabled={disabled}
           placeholder={placeholder}
           inputMode={inputMode}
           pattern={pattern}

@@ -4,6 +4,7 @@ export const PUBLIC_PATHS = {
   FORGOT_PASSWORD: "/forgot-password",
   VERIFY_OTP: "/verify-otp",
   RESET_PASSWORD: "/reset-password",
+  ACCEPT_INVITATION: "/accept-invitation",
 };
 
 export const PRIVATE_PATHS = {
@@ -15,6 +16,7 @@ export const PRIVATE_PATHS = {
   TASK_DETAIL: "/task-management/:id",
   PAYMENT_ESCROW: "/payment-escrow",
   ADMINS: "/admins",
+  ADMIN_DETAIL: "/admins/:id",
   ROLES_MANAGEMENT: "/admins/roles",
   CREATE_ROLE: "/admins/roles/create",
   EDIT_ROLE: "/admins/roles/:id",

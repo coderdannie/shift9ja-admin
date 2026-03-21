@@ -9,10 +9,15 @@ import Button from '../../components/common/Button';
 import { verifyOtpInitValues, verifyOtpValidateSchema } from '../../utils/validation';
 import { PUBLIC_PATHS } from '../../routes/constants';
 
+import { useVerifyOtp, useResendOtp } from '../../services/query/auth';
+
 const VerifyOTP = () => {
   const navigate = useNavigate();
   const [timer, setTimer] = useState(30);
-  const email = localStorage.getItem('reset_email') || 'your email';
+  const email = localStorage.getItem('reset_email') || '';
+  
+  const { mutate: verifyOtp, isPending: isVerifying } = useVerifyOtp();
+  const { mutate: resendOtp, isPending: isResending } = useResendOtp();
 
   useEffect(() => {
     let interval: any;
@@ -25,21 +30,31 @@ const VerifyOTP = () => {
   }, [timer]);
 
   const handleSubmit = (values: typeof verifyOtpInitValues) => {
-    // Mocking OTP verification (always 1234 for testing)
-    if (values.otp === '1234') {
-      toast.success('OTP verified successfully!');
-      setTimeout(() => {
-        navigate(PUBLIC_PATHS.RESET_PASSWORD);
-      }, 1500);
-    } else {
-      toast.error('Invalid OTP. Please try again.');
-    }
+    verifyOtp({ email, otp: values.otp }, {
+      onSuccess: () => {
+        toast.success('OTP verified successfully!');
+        localStorage.setItem('reset_otp', values.otp);
+        setTimeout(() => {
+          navigate(PUBLIC_PATHS.RESET_PASSWORD);
+        }, 1500);
+      },
+      onError: (error: any) => {
+        toast.error(error?.response?.data?.message || 'Invalid OTP. Please try again.');
+      }
+    });
   };
 
   const handleResend = () => {
     if (timer === 0) {
-      toast.success('OTP resent successfully!');
-      setTimer(30);
+      resendOtp({ email }, {
+        onSuccess: () => {
+          toast.success('OTP resent successfully!');
+          setTimer(30);
+        },
+        onError: (error: any) => {
+          toast.error(error?.response?.data?.message || 'Failed to resend OTP');
+        }
+      });
     }
   };
 
@@ -62,7 +77,7 @@ const VerifyOTP = () => {
         </Link>
         <h1 className="text-[32px] font-bold text-[#101828]">Verify OTP</h1>
         <p className="text-[#475467] mt-2">
-          Enter the 4-digit code sent to <span className="font-semibold text-[#101828] text-nowrap">{email}</span>
+          Enter the 6-digit code sent to <span className="font-semibold text-[#101828] text-nowrap">{email || 'your email'}</span>
         </p>
       </motion.div>
 
@@ -88,9 +103,9 @@ const VerifyOTP = () => {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 error={touched.otp && errors.otp}
-                placeholder="0 0 0 0"
+                placeholder="0 0 0 0 0 0"
                 icon={<ShieldCheck size={20} />}
-                size="text-2xl tracking-[1rem] text-center font-bold"
+                size="text-2xl tracking-[0.5rem] text-center font-bold"
               />
 
               <div className="flex items-center justify-center gap-2 mt-4 mb-6">
@@ -98,18 +113,18 @@ const VerifyOTP = () => {
                  <button
                    type="button"
                    onClick={handleResend}
-                   disabled={timer > 0}
-                   className={`text-sm font-bold ${timer > 0 ? 'text-[#98A2B3] cursor-not-allowed' : 'text-primary hover:text-green-700'}`}
+                   disabled={timer > 0 || isResending}
+                   className={`text-sm font-bold ${ (timer > 0 || isResending) ? 'text-[#98A2B3] cursor-not-allowed' : 'text-primary hover:text-green-700'}`}
                  >
-                   Resend {timer > 0 ? `(${timer}s)` : ''}
+                   {isResending ? 'Sending...' : `Resend ${timer > 0 ? `(${timer}s)` : ''}`}
                  </button>
               </div>
 
               <Button
                 type="submit"
                 label="Verify Code"
-                isLoading={isSubmitting}
-                disabled={!isValid || !dirty}
+                isLoading={isVerifying}
+                disabled={!isValid || !dirty || isVerifying}
               />
             </Form>
           )}

@@ -2,23 +2,15 @@ import React from 'react';
 import { Eye } from 'lucide-react';
 import CustomTable from '../../components/common/CustomTable';
 
-export type TaskStatus = 'open' | 'in_progress' | 'completed' | 'disputed';
-
-export interface Task {
-  id: string;
-  title: string;
-  city: string;
-  status: TaskStatus;
-  price: number;
-  client: string;
-  helper: string | null;
-}
+import type { TaskItem, TaskStatus } from '../../types/index.ts';
 
 const statusConfig: Record<TaskStatus, { label: string; dot: string; bg: string; text: string; border: string }> = {
   open: { label: 'Open', dot: 'bg-blue-500', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
-  in_progress: { label: 'In progress', dot: 'bg-violet-500', bg: 'bg-violet-50', text: 'text-violet-700', border: 'border-violet-200' },
+  assigned: { label: 'In progress', dot: 'bg-violet-500', bg: 'bg-violet-50', text: 'text-violet-700', border: 'border-violet-200' },
   completed: { label: 'Completed', dot: 'bg-green-500', bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' },
   disputed: { label: 'Disputed', dot: 'bg-red-500', bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' },
+  cancelled: { label: 'Cancelled', dot: 'bg-gray-500', bg: 'bg-gray-50', text: 'text-gray-700', border: 'border-gray-200' },
+  paid: { label: 'Paid', dot: 'bg-emerald-500', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
 };
 
 const TaskStatusBadge: React.FC<{ status: TaskStatus }> = ({ status }) => {
@@ -31,12 +23,12 @@ const TaskStatusBadge: React.FC<{ status: TaskStatus }> = ({ status }) => {
   );
 };
 
-const TASK_HEADERS = ['Task Title', 'City', 'Status', 'Price', 'Client', 'Helper', 'Actions'];
+const TASK_HEADERS = ['Task Title', 'City', 'Status', 'Budget', 'Client', 'Helper', 'Actions'];
 
 interface TaskTableProps {
-  tasks: Task[];
+  tasks: TaskItem[];
   isLoading?: boolean;
-  onView: (task: Task) => void;
+  onView: (task: TaskItem) => void;
 }
 
 const TaskTable: React.FC<TaskTableProps> = ({ tasks, isLoading = false, onView }) => (
@@ -49,14 +41,18 @@ const TaskTable: React.FC<TaskTableProps> = ({ tasks, isLoading = false, onView 
       </tr>
     ) : (
       tasks.map((task) => (
-        <tr key={task.id} className="hover:bg-gray-50 transition-colors">
+        <tr key={task.uuid} className="hover:bg-gray-50 transition-colors">
           <td className="px-6 py-4 text-[#101828] font-semibold max-w-[220px] truncate">{task.title}</td>
-          <td className="px-6 py-4 text-[#475467] whitespace-nowrap">{task.city}</td>
+          <td className="px-6 py-4 text-[#475467] whitespace-nowrap">{task.location?.city || 'N/A'}</td>
           <td className="px-6 py-4"><TaskStatusBadge status={task.status} /></td>
-          <td className="px-6 py-4 text-[#475467] font-medium whitespace-nowrap">#{task.price.toLocaleString()}</td>
-          <td className="px-6 py-4 text-[#475467] whitespace-nowrap">{task.client}</td>
+          <td className="px-6 py-4 text-[#475467] font-medium whitespace-nowrap">
+            #{Number(task.budget).toLocaleString()}
+          </td>
           <td className="px-6 py-4 text-[#475467] whitespace-nowrap">
-            {task.helper ?? <span className="text-[#D0D5DD] italic font-normal">Unassigned</span>}
+            {task.client ? `${task.client.firstName} ${task.client.lastName}` : 'N/A'}
+          </td>
+          <td className="px-6 py-4 text-[#475467] whitespace-nowrap">
+            {task.helper ? `${task.helper.firstName} ${task.helper.lastName}` : <span className="text-[#D0D5DD] italic font-normal">Unassigned</span>}
           </td>
           <td className="px-6 py-4">
             <button

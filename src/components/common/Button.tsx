@@ -3,7 +3,7 @@ import React from 'react';
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   label: string;
   isLoading?: boolean;
-  variant?: 'primary' | 'secondary' | 'outline';
+  variant?: 'primary' | 'secondary' | 'outline' | 'danger';
   fullWidth?: boolean;
   icon?: React.ReactNode;
 }
@@ -24,6 +24,7 @@ const Button: React.FC<ButtonProps> = ({
     primary: 'bg-primary text-white hover:bg-green-700 active:scale-[0.99] disabled:bg-gray-200 disabled:text-gray-500 disabled:cursor-not-allowed',
     secondary: 'bg-secondary text-white hover:bg-secondary/90 active:scale-[0.99] disabled:bg-gray-200 disabled:text-gray-500 disabled:cursor-not-allowed',
     outline: 'border border-[#D0D5DD] bg-white text-[#344054] hover:bg-gray-50 active:scale-[0.99] disabled:bg-gray-50 disabled:text-gray-300 disabled:cursor-not-allowed',
+    danger: 'bg-[#D92D20] text-white hover:bg-[#B42318] active:scale-[0.99] disabled:bg-gray-200 disabled:text-gray-500 disabled:cursor-not-allowed',
   };
 
   const widthStyle = fullWidth ? 'w-full' : 'px-6';

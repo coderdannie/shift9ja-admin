@@ -9,16 +9,25 @@ import Button from '../../components/common/Button';
 import { forgotPassInitValues, forgotPassValidateSchema } from '../../utils/validation';
 import { PUBLIC_PATHS } from '../../routes/constants';
 
+import { useForgotPassword } from '../../services/query/auth';
+
 const ForgotPassword = () => {
   const navigate = useNavigate();
+  const { mutate: forgotPassword, isPending } = useForgotPassword();
 
   const handleSubmit = (values: typeof forgotPassInitValues) => {
-    // Mocking OTP send
-    toast.success('OTP sent successfully to your email!');
-    setTimeout(() => {
-      localStorage.setItem('reset_email', values.email);
-      navigate(PUBLIC_PATHS.VERIFY_OTP);
-    }, 1500);
+    forgotPassword(values, {
+      onSuccess: () => {
+        toast.success('OTP sent successfully to your email!');
+        localStorage.setItem('reset_email', values.email);
+        setTimeout(() => {
+          navigate(PUBLIC_PATHS.VERIFY_OTP);
+        }, 1500);
+      },
+      onError: (error: any) => {
+        toast.error(error?.response?.data?.message || 'Failed to send OTP');
+      }
+    });
   };
 
   return (
@@ -69,8 +78,8 @@ const ForgotPassword = () => {
               <Button
                 type="submit"
                 label="Send OTP"
-                isLoading={isSubmitting}
-                disabled={!isValid || !dirty}
+                isLoading={isPending}
+                disabled={!isValid || !dirty || isPending}
                 className="mt-4"
               />
             </Form>

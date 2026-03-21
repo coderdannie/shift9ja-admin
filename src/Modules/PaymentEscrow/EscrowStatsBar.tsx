@@ -22,13 +22,27 @@ const EscrowStatCard: React.FC<EscrowStatCardProps> = ({ title, value, icon: Ico
   </div>
 );
 
-const EscrowStatsBar: React.FC = () => {
-  const stats = [
-    { title: 'Total Funds in Escrow', value: '12,842', icon: Wallet, iconBg: 'bg-green-50', iconColor: 'text-green-600' },
-    { title: 'Pending Release', value: '9,306', icon: Clock, iconBg: 'bg-amber-50', iconColor: 'text-amber-600' },
-    { title: 'Completed Payouts', value: '8,621', icon: CheckCircle2, iconBg: 'bg-green-50', iconColor: 'text-green-600' },
-    { title: 'Failed Payments', value: '3', icon: AlertCircle, iconBg: 'bg-red-50', iconColor: 'text-red-600' },
-  ];
+interface EscrowStatsBarProps {
+  stats: { title: string; value: string; icon: LucideIcon; iconBg: string; iconColor: string }[];
+  isLoading?: boolean;
+}
+
+const EscrowStatsBar: React.FC<EscrowStatsBarProps> = ({ stats, isLoading }) => {
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 animate-pulse">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="bg-white p-6 rounded-2xl border border-[#F2F4F7] flex flex-col gap-4 shadow-sm flex-1 min-w-[240px]">
+            <div className="w-12 h-12 rounded-full bg-gray-100" />
+            <div className="flex flex-col gap-2">
+              <div className="h-4 bg-gray-100 rounded w-1/2" />
+              <div className="h-8 bg-gray-100 rounded w-3/4" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">

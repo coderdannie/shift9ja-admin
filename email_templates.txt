@@ -1,0 +1,105 @@
+SHIFT9JA EMAIL TEMPLATES
+
+A comprehensive list of required email templates for the Shift9ja platform.
+
+1. ADMINISTRATIVE & AUTHENTICATION (ALL USERS)
+-----------------------------------------------
+- Admin Invitation
+  Purpose: Onboard new administrators
+  Trigger: Admin creates new admin
+  Key Components: Direct link, 6-digit OTP, Role description
+
+- Password Reset
+  Purpose: Secure account recovery
+  Trigger: User clicks "Forgot Password"
+  Key Components: 6-digit OTP, Secure link
+
+- Login Alert
+  Purpose: Security notification
+  Trigger: Access from new device/IP
+  Key Components: Device info, Location, "Was this you?" action
+
+- Verify Email
+  Purpose: Account activation
+  Trigger: Registration (Client/Helper)
+  Key Components: Verification link or OTP
+
+
+2. USER ACCOUNT LIFECYCLE (CLIENTS & HELPERS)
+----------------------------------------------
+- Welcome Email
+  Purpose: Welcome and platform guide
+  Trigger: After successful verification
+  Key Components: Tips for success, Link to profile setup
+
+- KYC Approved
+  Purpose: Identity verification success
+  Trigger: Admin approves KYC
+  Key Components: Success message, High-limit eligibility info
+
+- KYC Rejected
+  Purpose: Identity verification failure
+  Trigger: Admin rejects KYC
+  Key Components: Reason for rejection, Link to re-upload
+
+- Account Status
+  Purpose: Suspension/Reactivation
+  Trigger: Admin toggles user status
+  Key Components: Reason (if suspended), Support contact info
+
+
+3. TASK MANAGEMENT (TRANSACTIONAL)
+-----------------------------------
+- Task Posted
+  Purpose: Posting confirmation
+  Trigger: Client submits a task
+  Key Components: Task summary, Next steps
+
+- New Applicant
+  Purpose: Notification of interest
+  Trigger: Helper applies to task
+  Key Components: Helper profile summary, Link to applicants
+
+- Task Assigned
+  Purpose: Awarding notification
+  Trigger: Client selects a Helper
+  Key Components: Task details, Commencing instructions
+
+- Task Completed
+  Purpose: Completion request
+  Trigger: Helper marks task as done
+  Key Components: Client confirmation link, Release payment action
+
+
+4. FINANCIAL & PAYMENTS (ESCROW)
+---------------------------------
+- Payment Secured
+  Purpose: Escrow confirmation
+  Trigger: Client pays into escrow
+  Key Components: Transaction ID, Amount secured
+
+- Payment Released
+  Purpose: Funds available to Helper
+  Trigger: Client confirms completion
+  Key Components: Amount, Wallet balance update
+
+- Withdrawal Success
+  Purpose: Payout confirmation
+  Trigger: Admin processes withdrawal
+  Key Components: Bank info, Expected arrival time
+
+- Dispute Raised
+  Purpose: Conflict notification
+  Trigger: Either party raises dispute
+  Key Components: Dispute ID, Admin intervention info
+
+
+5. COMMUNITY & FEEDBACK
+------------------------
+- New Review
+  Purpose: Rating notification
+  Trigger: Client/Helper rates the other
+  Key Components: Star rating, Snippet of review, Link to profile
+
+
+NOTE: All templates should follow a consistent premium design language with Shift9ja branding, clear Call-to-Action (CTA) buttons, and mobile-optimized table layouts.

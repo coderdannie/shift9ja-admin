@@ -8,22 +8,25 @@ import Button from '../../components/common/Button';
 import { changePassInitValues, changePassValidateSchema } from '../../utils/validation';
 import { PUBLIC_PATHS } from '../../routes/constants';
 
+import { useChangePassword } from '../../services/query/auth';
+import { PRIVATE_PATHS } from '../../routes/constants';
+
 const ChangePassword = () => {
   const navigate = useNavigate();
-  const email = localStorage.getItem('temp_email');
-
-  if (!email) {
-    navigate(PUBLIC_PATHS.LOGIN);
-    return null;
-  }
+  const { mutate: changePassword, isPending } = useChangePassword();
 
   const handleSubmit = (values: typeof changePassInitValues) => {
-    // Mocking a successful password change
-    toast.success('Password updated successfully! Please login with your new password.');
-    setTimeout(() => {
-      localStorage.removeItem('temp_email');
-      navigate(PUBLIC_PATHS.LOGIN);
-    }, 2000);
+    changePassword(values, {
+      onSuccess: () => {
+        toast.success('Password updated successfully!');
+        setTimeout(() => {
+          navigate(PRIVATE_PATHS.DASHBOARD);
+        }, 2000);
+      },
+      onError: (error: any) => {
+        toast.error(error?.response?.data?.message || 'Failed to update password');
+      }
+    });
   };
 
   return (
@@ -60,7 +63,18 @@ const ChangePassword = () => {
             dirty,
             isSubmitting,
           }) => (
-            <Form className="flex flex-col">
+            <Form className="flex flex-col gap-4">
+              <FormInput
+                label="Old Password"
+                name="oldPassword"
+                type="password"
+                value={values.oldPassword}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={touched.oldPassword && errors.oldPassword}
+                placeholder="Enter current password"
+              />
+
               <FormInput
                 label="New Password"
                 name="newPassword"
@@ -86,8 +100,8 @@ const ChangePassword = () => {
               <Button
                 type="submit"
                 label="Update Password"
-                isLoading={isSubmitting}
-                disabled={!isValid || !dirty}
+                isLoading={isPending}
+                disabled={!isValid || !dirty || isPending}
                 className="mt-4"
               />
             </Form>

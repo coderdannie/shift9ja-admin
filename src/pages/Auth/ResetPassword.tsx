@@ -9,16 +9,28 @@ import Button from '../../components/common/Button';
 import { resetPassInitValues, resetPassValidateSchema } from '../../utils/validation';
 import { PUBLIC_PATHS } from '../../routes/constants';
 
+import { useResetPassword } from '../../services/query/auth';
+
 const ResetPassword = () => {
   const navigate = useNavigate();
+  const { mutate: resetPassword, isPending } = useResetPassword();
+  const email = localStorage.getItem('reset_email') || '';
+  const otp = localStorage.getItem('reset_otp') || '';
 
   const handleSubmit = (values: typeof resetPassInitValues) => {
-    // Mocking password reset
-    toast.success('Password reset successfully! Please login with your new password.');
-    setTimeout(() => {
-      localStorage.removeItem('reset_email');
-      navigate(PUBLIC_PATHS.LOGIN);
-    }, 2000);
+    resetPassword({ ...values, email, otp }, {
+      onSuccess: () => {
+        toast.success('Password reset successfully! Please login with your new password.');
+        localStorage.removeItem('reset_email');
+        localStorage.removeItem('reset_otp');
+        setTimeout(() => {
+          navigate(PUBLIC_PATHS.LOGIN);
+        }, 2000);
+      },
+      onError: (error: any) => {
+        toast.error(error?.response?.data?.message || 'Failed to reset password');
+      }
+    });
   };
 
   return (
@@ -74,8 +86,8 @@ const ResetPassword = () => {
               <Button
                 type="submit"
                 label="Reset Password"
-                isLoading={isSubmitting}
-                disabled={!isValid || !dirty}
+                isLoading={isPending}
+                disabled={!isValid || !dirty || isPending}
                 className="mt-4"
               />
             </Form>

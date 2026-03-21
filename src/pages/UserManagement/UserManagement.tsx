@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { Users, UserCheck, Flag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Filter, Download } from 'lucide-react';
+import { Filter, Download, ChevronDown } from 'lucide-react';
+import { Menu, MenuButton, MenuItem, MenuItems, Portal } from '@headlessui/react';
 import Button from '../../components/common/Button';
 import ConfirmModal from '../../components/common/ConfirmModal';
 import Pagination from '../../components/common/Pagination';
@@ -34,43 +35,68 @@ const MOCK_HELPERS: User[] = [
   { id: 'h5', fullName: 'Yusuf Garba', email: 'yusuf@gmail.com', phone: '08055667788', city: 'Kano', tasksCompleted: 7, disputeCount: 3, status: 'suspended' },
 ];
 
-const stats = [
-  { title: 'Total Users', value: '12,842', icon: Users },
-  { title: 'Active Users', value: '9,306', icon: Users },
-  { title: 'Verified Helpers', value: '8,621', icon: UserCheck },
-  { title: 'Flagged Accounts', value: '3', icon: Flag },
-];
-
 type ActionType = 'suspend' | 'unsuspend' | 'ban' | null;
+
+import { useGetUsers, useGetUserStats } from '../../services/query/userMgt';
 
 const UserManagement = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>('client');
   const [search, setSearch] = useState('');
+  const [status, setStatus] = useState('');
+  const [city, setCity] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [users, setUsers] = useState({ client: MOCK_CLIENTS, helper: MOCK_HELPERS });
+
+  const { data: userData, isPending: isLoadingUsers } = useGetUsers(
+    currentPage,
+    USERS_PER_PAGE,
+    search,
+    activeTab,
+    status,
+    city
+  );
+
+  const { data: statsData, isPending: isLoadingStats } = useGetUserStats();
+
+  const userStats = useMemo(() => {
+    const s = statsData?.data;
+    return [
+      { title: 'Total Users', value: s?.totalUsers?.toLocaleString() || '0', icon: Users },
+      { title: 'Active Users', value: s?.activeUsers?.toLocaleString() || '0', icon: Users },
+      { title: 'Verified Helpers', value: s?.verifiedHelpers?.toLocaleString() || '0', icon: UserCheck },
+      { title: 'Flagged Accounts', value: s?.flaggedAccounts?.toLocaleString() || '0', icon: Flag },
+    ];
+  }, [statsData]);
+
+  const usersList: User[] = useMemo(() => {
+    return (userData?.data?.items || []).map((item: any) => ({
+      id: item.uuid,
+      fullName: `${item.firstName} ${item.lastName}`,
+      email: item.email,
+      phone: item.phoneNumber,
+      city: item.profile?.address || 'N/A',
+      taskPosted: item.profile?.tasksPostedCount || 0,
+      tasksCompleted: item.profile?.tasksCompletedCount || 0,
+      disputeCount: item.profile?.tasksDisputedCount || 0,
+      status: item.isSuspended 
+        ? 'suspended' 
+        : (item.profile?.verificationStatus === 'verified' ? 'verified' : 'not_verified'),
+    }));
+  }, [userData]);
+
+  const totalPages = userData?.data?.meta?.totalPages || 1;
 
   // Modal state
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [pendingAction, setPendingAction] = useState<ActionType>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
-  const allUsers = activeTab === 'client' ? users.client : users.helper;
-
-  const filtered = useMemo(() =>
-    allUsers.filter((u) =>
-      u.fullName.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase()) ||
-      u.city.toLowerCase().includes(search.toLowerCase())
-    ), [allUsers, search]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / USERS_PER_PAGE));
-  const paginated = filtered.slice((currentPage - 1) * USERS_PER_PAGE, currentPage * USERS_PER_PAGE);
-
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
     setCurrentPage(1);
     setSearch('');
+    setStatus('');
+    setCity('');
   };
 
   const openModal = (user: User, action: ActionType) => {
@@ -93,27 +119,9 @@ const UserManagement = () => {
   const handleConfirm = () => {
     if (!selectedUser || !pendingAction) return;
     setActionLoading(true);
+    // TODO: Implement actual mutation
     setTimeout(() => {
-      const newStatus: User['status'] =
-        pendingAction === 'suspend' ? 'suspended' :
-        pendingAction === 'unsuspend' ? 'verified' :
-        'not_verified';
-
-      const updateList = (list: User[]) =>
-        list.map((u) => u.id === selectedUser.id ? { ...u, status: newStatus } : u);
-
-      setUsers((prev) => ({
-        client: updateList(prev.client),
-        helper: updateList(prev.helper),
-      }));
-
-      const messages: Record<NonNullable<ActionType>, string> = {
-        suspend: `${selectedUser.fullName} has been suspended.`,
-        unsuspend: `${selectedUser.fullName} has been unsuspended.`,
-        ban: `${selectedUser.fullName} has been banned.`,
-      };
-
-      toast.success(messages[pendingAction]);
+      toast.success('Action successful (Mocked)');
       setActionLoading(false);
       closeModal();
     }, 1000);
@@ -170,13 +178,63 @@ const UserManagement = () => {
         </div>
       </div>
 
-      <UserStatsBar stats={stats} />
-      <UserSearchBar value={search} onChange={(v) => { setSearch(v); setCurrentPage(1); }} />
+      <UserStatsBar stats={userStats} isLoading={isLoadingStats} />
+      
+      <div className="flex flex-col lg:flex-row gap-4 items-end">
+        <div className="flex-1 w-full">
+          <UserSearchBar value={search} onChange={(v) => { setSearch(v); setCurrentPage(1); }} />
+        </div>
+        <div className="w-full lg:w-48">
+          <label className="block text-xs font-medium text-gray-500 mb-1 ml-1">Status</label>
+          <Menu as="div" className="relative">
+            <MenuButton className="flex items-center justify-between w-full h-12 px-5 rounded-full border border-[#F2F4F7] bg-white text-[#101828] text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition hover:border-[#D0D5DD]">
+              <span className="capitalize">{status === '' ? 'All Status' : status}</span>
+              <ChevronDown size={16} className="text-[#667085]" />
+            </MenuButton>
+            <Portal>
+              <MenuItems anchor="bottom start" className="z-50 w-48 origin-top-right rounded-2xl bg-white p-1 shadow-2xl focus:outline-none transition duration-100 ease-out data-[closed]:scale-95 data-[closed]:opacity-0">
+                {[
+                  { label: 'All Status', value: '' },
+                  { label: 'Active', value: 'active' },
+                  { label: 'Suspended', value: 'suspended' },
+                  { label: 'Flagged', value: 'flagged' },
+                  { label: 'Unverified', value: 'unverified' },
+                ].map((opt) => (
+                  <MenuItem key={opt.label}>
+                    <button
+                      onClick={() => { setStatus(opt.value); setCurrentPage(1); }}
+                      className={`flex items-center w-full px-4 py-2.5 text-sm rounded-xl transition-colors ${
+                        status === opt.value 
+                          ? 'bg-[#F9FAFB] text-primary font-bold' 
+                          : 'text-[#475467] hover:bg-[#F9FAFB] hover:text-[#101828]'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  </MenuItem>
+                ))}
+              </MenuItems>
+            </Portal>
+          </Menu>
+        </div>
+        <div className="w-full lg:w-48">
+          <label className="block text-xs font-medium text-gray-500 mb-1 ml-1">City</label>
+          <input 
+            type="text"
+            placeholder="Filter by city"
+            value={city}
+            onChange={(e) => { setCity(e.target.value); setCurrentPage(1); }}
+            className="w-full h-12 px-4 rounded-full border border-[#F2F4F7] bg-white text-[#101828] text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+          />
+        </div>
+      </div>
+
       <UserTabs activeTab={activeTab} onChange={handleTabChange} />
 
       <UserTable
-        users={paginated}
+        users={usersList}
         type={activeTab}
+        isLoading={isLoadingUsers}
         onView={(u) => navigate(`/user-management/${u.id}`)}
         onEdit={(u) => navigate(`/user-management/${u.id}/edit`)}
         onSuspend={handleSuspend}

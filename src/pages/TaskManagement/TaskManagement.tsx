@@ -7,64 +7,52 @@ import Pagination from '../../components/common/Pagination';
 import TaskTabs from '../../Modules/TaskManagement/TaskTabs';
 import type { TaskTabType } from '../../Modules/TaskManagement/TaskTabs';
 import TaskTable from '../../Modules/TaskManagement/TaskTable';
-import type { Task, TaskStatus } from '../../Modules/TaskManagement/TaskTable';
 import UserStatsBar from '../../Modules/UserManagement/UserStatsBar';
 import { Toaster } from 'react-hot-toast';
+import { useGetTaskStats, useGetTasks } from '../../services/query/taskMgt';
+import type { TaskItem, TaskStatus } from '../../types/index.ts';
 
-const TASKS_PER_PAGE = 6;
+const TASKS_PER_PAGE = 10;
 
-const MOCK_TASKS: Task[] = [
-  { id: 't1', title: "Inspect my parents' house", city: 'Ibadan', status: 'in_progress', price: 5500, client: 'Seun Adedayo', helper: 'Seun Adedayo' },
-  { id: 't2', title: 'Check if the shop is real', city: 'Ibadan', status: 'in_progress', price: 5500, client: 'Seun Adedayo', helper: 'Seun Adedayo' },
-  { id: 't3', title: 'Deliver my document', city: 'Ibadan', status: 'in_progress', price: 5500, client: 'Seun Adedayo', helper: 'Seun Adedayo' },
-  { id: 't4', title: 'Buy groceries for grandma', city: 'Ibadan', status: 'in_progress', price: 5500, client: 'Seun Adedayo', helper: 'Seun Adedayo' },
-  { id: 't5', title: 'Inspect my friends house', city: 'Ibadan', status: 'in_progress', price: 5500, client: 'Seun Adedayo', helper: 'Seun Adedayo' },
-  { id: 't6', title: 'Help pickup my package', city: 'Ibadan', status: 'in_progress', price: 5500, client: 'Seun Adedayo', helper: 'Seun Adedayo' },
-  { id: 't7', title: 'Move furniture to new apartment', city: 'Lagos', status: 'open', price: 12000, client: 'Amara Okonkwo', helper: null },
-  { id: 't8', title: 'Fix kitchen sink', city: 'Abuja', status: 'open', price: 8000, client: 'Emeka Nwosu', helper: null },
-  { id: 't9', title: 'Pick up dry cleaning', city: 'Kano', status: 'open', price: 3000, client: 'Fatima Bello', helper: null },
-  { id: 't10', title: 'Paint the living room', city: 'Lagos', status: 'completed', price: 35000, client: 'Biodun Adeleke', helper: 'Chioma James' },
-  { id: 't11', title: 'Tutor my child in math', city: 'Ibadan', status: 'completed', price: 10000, client: 'Seun Adedayo', helper: 'Kola Abiodun' },
-  { id: 't12', title: 'Repair air conditioner', city: 'Enugu', status: 'disputed', price: 25000, client: 'Ngozi Eze', helper: 'Yusuf Garba' },
-  { id: 't13', title: 'Deliver birthday cake', city: 'Lagos', status: 'disputed', price: 6000, client: 'Amara Okonkwo', helper: 'Chioma James' },
-];
-
-const TAB_STATUS_MAP: Record<TaskTabType, TaskStatus> = {
+const TAB_STATUS_MAP: Record<TaskTabType, TaskStatus | ''> = {
   open: 'open',
-  in_progress: 'in_progress',
+  in_progress: 'assigned',
   completed: 'completed',
   disputed: 'disputed',
 };
 
-const stats = [
-  { title: 'Total Tasks Posted', value: '12,842', icon: ClipboardList },
-  { title: 'Active Tasks', value: '9,306', icon: Clock },
-  { title: 'Tasks in Progress', value: '8,621', icon: CheckCircle },
-  { title: 'Tasks in Dispute', value: '3', icon: AlertTriangle },
-];
 
 const TaskManagement: React.FC = () => {
   const navigate = useNavigate();
+  const { data: taskStats, isPending: isLoadingStats } = useGetTaskStats();
+  const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState<TaskTabType>('in_progress');
   const [search, setSearch] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+
+  const { data: tasksData, isPending: isLoadingTasks } = useGetTasks({
+    page: currentPage,
+    limit: TASKS_PER_PAGE,
+    status: TAB_STATUS_MAP[activeTab],
+    search,
+  });
+
+  const tasks = tasksData?.data?.items || [];
+  const meta = tasksData?.data?.meta;
+  const totalPages = meta?.totalPages || 1;
+
+  const statsData = taskStats?.data;
+  const stats = useMemo(() => [
+    { title: 'Total Tasks', value: statsData?.totalTasks?.toLocaleString() || '0', icon: ClipboardList },
+    { title: 'Open Tasks', value: statsData?.openTasks?.toLocaleString() || '0', icon: Clock },
+    { title: 'Tasks in Progress', value: statsData?.taskInProgress?.toLocaleString() || '0', icon: CheckCircle },
+    { title: 'Tasks in Dispute', value: statsData?.tasksInDispute?.toLocaleString() || '0', icon: AlertTriangle },
+  ], [statsData]);
 
   const handleTabChange = (tab: TaskTabType) => {
     setActiveTab(tab);
     setCurrentPage(1);
-    setSearch('');
+    // setSearch(''); // Optionally keep search when switching tabs
   };
-
-  const filtered = useMemo(() =>
-    MOCK_TASKS.filter((t) =>
-      t.status === TAB_STATUS_MAP[activeTab] &&
-      (t.title.toLowerCase().includes(search.toLowerCase()) ||
-        t.city.toLowerCase().includes(search.toLowerCase()) ||
-        t.client.toLowerCase().includes(search.toLowerCase()))
-    ), [activeTab, search]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / TASKS_PER_PAGE));
-  const paginated = filtered.slice((currentPage - 1) * TASKS_PER_PAGE, currentPage * TASKS_PER_PAGE);
 
   return (
     <div className="flex flex-col gap-6">
@@ -83,7 +71,15 @@ const TaskManagement: React.FC = () => {
       </div>
 
       {/* Stats */}
-      <UserStatsBar stats={stats} />
+      {isLoadingStats ? (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 animate-pulse">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-24 bg-gray-100 rounded-3xl"></div>
+          ))}
+        </div>
+      ) : (
+        <UserStatsBar stats={stats} />
+      )}
 
       {/* Search */}
       <div className="relative">
@@ -102,8 +98,9 @@ const TaskManagement: React.FC = () => {
 
       {/* Table */}
       <TaskTable
-        tasks={paginated}
-        onView={(task) => navigate(`/task-management/${task.id}`)}
+        tasks={tasks}
+        isLoading={isLoadingTasks}
+        onView={(task) => navigate(`/task-management/${task.uuid}`)}
       />
 
       {/* Pagination */}

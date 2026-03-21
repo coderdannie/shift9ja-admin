@@ -1,52 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Shield, ArrowLeft, Check, Info } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { PRIVATE_PATHS } from '../../routes/constants';
 import Button from '../../components/common/Button';
 import FormInput from '../../components/common/FormInput';
-
-interface PermissionGroup {
-  category: string;
-  permissions: {
-    id: string;
-    name: string;
-    description: string;
-  }[];
-}
-
-const PERMISSION_GROUPS: PermissionGroup[] = [
-  {
-    category: 'User Management',
-    permissions: [
-      { id: 'view_users', name: 'View Users', description: 'Can view the list of all users and their details.' },
-      { id: 'edit_users', name: 'Edit Users', description: 'Can update user profiles and account status.' },
-      { id: 'suspend_users', name: 'Suspend Users', description: 'Can temporarily or permanently suspend user accounts.' },
-    ],
-  },
-  {
-    category: 'Task Management',
-    permissions: [
-      { id: 'view_tasks', name: 'View Tasks', description: 'Can view all tasks and their progress.' },
-      { id: 'edit_tasks', name: 'Edit Tasks', description: 'Can update task details and assignments.' },
-      { id: 'resolve_disputes', name: 'Resolve Disputes', description: 'Can arbitrate and resolve task disputes.' },
-    ],
-  },
-  {
-    category: 'Finance & Escrow',
-    permissions: [
-      { id: 'view_escrow', name: 'View Escrow', description: 'Can view escrow transactions and balances.' },
-      { id: 'release_funds', name: 'Release Funds', description: 'Can manually release funds from escrow.' },
-      { id: 'process_refunds', name: 'Process Refunds', description: 'Can process payment refunds for tasks.' },
-    ],
-  },
-  {
-    category: 'Admin Management',
-    permissions: [
-      { id: 'manage_admins', name: 'Manage Admins', description: 'Can invite, edit, and delete other admins.' },
-      { id: 'manage_roles', name: 'Manage Roles', description: 'Can create and define system roles and permissions.' },
-    ],
-  },
-];
+import { useGetPermissions, useGetRoleDetails, useCreateRole, useUpdateRole } from '../../services/query/adminMgt';
+import { toast, Toaster } from 'react-hot-toast';
+import ConfirmModal from '../../components/common/ConfirmModal';
 
 const CreateRole: React.FC = () => {
   const navigate = useNavigate();
@@ -54,16 +14,45 @@ const CreateRole: React.FC = () => {
   const isEdit = !!id;
 
   const [roleName, setRoleName] = useState('');
+  const [roleDescription, setRoleDescription] = useState('');
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+
+  const { data: permissionsData, isPending: isLoadingPermissions } = useGetPermissions();
+  const { data: roleDetailData, isPending: isLoadingRole } = useGetRoleDetails(id || '', { enabled: isEdit });
+  const { mutate: createRole, isPending: isCreating } = useCreateRole();
+  const { mutate: updateRole, isPending: isUpdating } = useUpdateRole();
+
+  const permissionGroups = useMemo(() => {
+    if (!permissionsData?.data) return [];
+    return permissionsData.data.map((group) => ({
+      category: group.name,
+      permissions: group.permissions.map((perm: any) => {
+        const permId = typeof perm === 'string' ? perm : (perm.key || perm.id || JSON.stringify(perm));
+        const permName = typeof perm === 'string' 
+          ? (perm.split('.').pop()?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || perm)
+          : (perm.label || perm.name || permId);
+        const permDesc = typeof perm === 'string'
+          ? `Can perform ${perm.split('.').pop()?.replace(/_/g, ' ')} actions in ${group.name.toLowerCase()}.`
+          : (perm.description || `Can perform actions in ${group.name.toLowerCase()}.`);
+          
+        return {
+          id: permId,
+          name: permName,
+          description: permDesc,
+        };
+      }),
+    }));
+  }, [permissionsData]);
 
   useEffect(() => {
-    if (isEdit) {
-      // In a real app, fetch role data here
-      setRoleName('Admin');
-      setSelectedPermissions(['view_users', 'view_tasks', 'view_escrow']);
+    if (isEdit && roleDetailData?.data) {
+      const role = roleDetailData.data;
+      setRoleName(role.name);
+      setRoleDescription(role.description || '');
+      setSelectedPermissions(role.permissions || []);
     }
-  }, [isEdit, id]);
+  }, [isEdit, roleDetailData]);
 
   const togglePermission = (permId: string) => {
     setSelectedPermissions(prev => 
@@ -73,18 +62,48 @@ const CreateRole: React.FC = () => {
     );
   };
 
-  const handleSave = async () => {
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      console.log('Saving Role:', { roleName, selectedPermissions });
-      setIsLoading(false);
-      navigate(PRIVATE_PATHS.ROLES_MANAGEMENT);
-    }, 1000);
+  const handleSave = () => {
+    setIsConfirmModalOpen(true);
   };
+
+  const confirmSave = async () => {
+    const payload = {
+      name: roleName,
+      description: roleDescription,
+      permissions: selectedPermissions,
+    };
+
+    if (isEdit && id) {
+      updateRole({ uuid: id, payload }, {
+        onSuccess: () => {
+          toast.success('Role updated successfully');
+          setIsConfirmModalOpen(false);
+          navigate(PRIVATE_PATHS.ROLES_MANAGEMENT);
+        },
+        onError: (error: any) => {
+          toast.error(error?.response?.data?.message || 'Failed to update role');
+        }
+      });
+    } else {
+      createRole(payload, {
+        onSuccess: () => {
+          toast.success('Role created successfully');
+          setIsConfirmModalOpen(false);
+          navigate(PRIVATE_PATHS.ROLES_MANAGEMENT);
+        },
+        onError: (error: any) => {
+          toast.error(error?.response?.data?.message || 'Failed to create role');
+        }
+      });
+    }
+  };
+
+  const isSaving = isCreating || isUpdating;
+  const isLoading = isLoadingPermissions || (isEdit && isLoadingRole);
 
   return (
     <div className="flex flex-col gap-8 w-full py-4 px-4 sm:px-6">
+      <Toaster position="top-right" />
       {/* Back Navigation */}
       <button 
         onClick={() => navigate(PRIVATE_PATHS.ROLES_MANAGEMENT)}
@@ -116,15 +135,26 @@ const CreateRole: React.FC = () => {
         <div className="lg:col-span-1">
           <div className="bg-white rounded-3xl border border-[#F2F4F7] shadow-sm p-8 h-fit sticky top-8">
             <h3 className="text-lg font-bold text-[#101828] mb-6">General Information</h3>
-            <FormInput 
-              label="Role Name"
-              name="roleName"
-              type="text"
-              placeholder="e.g. Content Moderator"
-              value={roleName}
-              onChange={(e) => setRoleName(e.target.value)}
-              onBlur={() => {}}
-            />
+            <div className="space-y-6">
+              <FormInput 
+                label="Role Name"
+                name="roleName"
+                type="text"
+                placeholder="e.g. Content Moderator"
+                value={roleName}
+                onChange={(e) => setRoleName(e.target.value)}
+                onBlur={() => {}}
+              />
+              <FormInput 
+                label="Description"
+                name="description"
+                type="text"
+                placeholder="e.g. Manages platform content"
+                value={roleDescription}
+                onChange={(e) => setRoleDescription(e.target.value)}
+                onBlur={() => {}}
+              />
+            </div>
             <div className="mt-8 p-4 bg-blue-50/50 rounded-2xl border border-blue-100 flex gap-3">
               <Info size={20} className="text-blue-500 shrink-0 mt-0.5" />
               <p className="text-xs text-blue-700 leading-relaxed font-semibold">
@@ -138,9 +168,9 @@ const CreateRole: React.FC = () => {
                 variant="primary"
                 fullWidth
                 onClick={handleSave}
-                isLoading={isLoading}
+                isLoading={isSaving}
                 className="!h-12 font-bold shadow-md shadow-primary/20"
-                disabled={!roleName || selectedPermissions.length === 0}
+                disabled={!roleName || selectedPermissions.length === 0 || isLoading}
                />
                <Button 
                 label="Cancel"
@@ -148,7 +178,7 @@ const CreateRole: React.FC = () => {
                 fullWidth
                 onClick={() => navigate(PRIVATE_PATHS.ROLES_MANAGEMENT)}
                 className="!h-12 font-bold border-[#D0D5DD]"
-                disabled={isLoading}
+                disabled={isSaving}
                />
             </div>
           </div>
@@ -156,47 +186,64 @@ const CreateRole: React.FC = () => {
 
         {/* Right Column: Permission Matrix */}
         <div className="lg:col-span-2 space-y-6 pb-12">
-          {PERMISSION_GROUPS.map((group) => (
-            <div key={group.category} className="bg-white rounded-3xl border border-[#F2F4F7] shadow-sm overflow-hidden">
-              <div className="px-6 py-4 bg-[#F9FAFB] border-b border-[#F2F4F7]">
-                <h4 className="text-sm font-bold text-[#344054] flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-primary" />
-                  {group.category}
-                </h4>
-              </div>
-              <div className="divide-y divide-[#F2F4F7]">
-                {group.permissions.map((perm) => {
-                  const isSelected = selectedPermissions.includes(perm.id);
-                  return (
-                    <div 
-                      key={perm.id} 
-                      className={`px-6 py-5 flex items-start justify-between cursor-pointer transition-colors ${
-                        isSelected ? 'bg-primary/[0.02]' : 'hover:bg-gray-50'
-                      }`}
-                      onClick={() => togglePermission(perm.id)}
-                    >
-                      <div className="flex-1 pr-6">
-                        <p className={`text-sm font-bold transition-colors ${isSelected ? 'text-primary' : 'text-[#101828]'}`}>
-                          {perm.name}
-                        </p>
-                        <p className="text-xs text-[#667085] mt-1 leading-relaxed">
-                          {perm.description}
-                        </p>
-                      </div>
-                      <div className={`
-                        w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all duration-200
-                        ${isSelected ? 'bg-primary border-primary' : 'border-[#D0D5DD] bg-white'}
-                      `}>
-                        {isSelected && <Check size={14} className="text-white" strokeWidth={4} />}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+          {isLoading ? (
+            <div className="flex items-center justify-center p-12 bg-white rounded-3xl border border-[#F2F4F7] min-h-[400px]">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
             </div>
-          ))}
+          ) : (
+            permissionGroups.map((group) => (
+              <div key={group.category} className="bg-white rounded-3xl border border-[#F2F4F7] shadow-sm overflow-hidden">
+                <div className="px-6 py-4 bg-[#F9FAFB] border-b border-[#F2F4F7]">
+                  <h4 className="text-sm font-bold text-[#344054] flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-primary" />
+                    {group.category}
+                  </h4>
+                </div>
+                <div className="divide-y divide-[#F2F4F7]">
+                  {group.permissions.map((perm) => {
+                    const isSelected = selectedPermissions.includes(perm.id);
+                    return (
+                      <div 
+                        key={perm.id} 
+                        className={`px-6 py-5 flex items-start justify-between cursor-pointer transition-colors ${
+                          isSelected ? 'bg-primary/[0.02]' : 'hover:bg-gray-50'
+                        }`}
+                        onClick={() => togglePermission(perm.id)}
+                      >
+                        <div className="flex-1 pr-6">
+                          <p className={`text-sm font-bold transition-colors ${isSelected ? 'text-primary' : 'text-[#101828]'}`}>
+                            {perm.name}
+                          </p>
+                          <p className="text-xs text-[#667085] mt-1 leading-relaxed">
+                            {perm.description}
+                          </p>
+                        </div>
+                        <div className={`
+                          w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all duration-200
+                          ${isSelected ? 'bg-primary border-primary' : 'border-[#D0D5DD] bg-white'}
+                        `}>
+                          {isSelected && <Check size={14} className="text-white" strokeWidth={4} />}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
+
+      <ConfirmModal 
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={confirmSave}
+        title={isEdit ? "Update Administrative Role" : "Create New Administrative Role"}
+        description={`Are you sure you want to ${isEdit ? 'update' : 'create'} the "${roleName}" role? This will immediately affect all administrators assigned to this role.`}
+        confirmLabel={isSaving ? (isEdit ? "Updating..." : "Creating...") : (isEdit ? "Confirm Update" : "Confirm Creation")}
+        variant="info"
+        isLoading={isSaving}
+      />
     </div>
   );
 };
