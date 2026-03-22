@@ -88,7 +88,7 @@ const Login = () => {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 error={touched.email && errors.email}
-                placeholder="example@email.com"
+                placeholder="Enter email"
               />
               
               <FormInput
@@ -99,7 +99,7 @@ const Login = () => {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 error={touched.password && errors.password}
-                placeholder="example@email.com"
+                placeholder="Enter password"
               />
 
               <div className="flex items-center justify-between mb-8">
