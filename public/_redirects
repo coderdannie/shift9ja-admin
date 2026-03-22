@@ -1,0 +1,7 @@
+# 1. ENFORCE APEX DOMAIN (Redirects www to apex)
+# Note: Netlify handles this automatically if shift9ja.com is set as your Primary Domain in the UI.
+https://shift9ja-admin.netlify.app/* https://shift9ja-admin.netlify.app/:splat 301!
+
+# 2. FALLBACK RULE for React/Vite SPA
+# Fixes 404 errors on direct visits to routes like /login
+# /* /index.html 200 (Commented out for Next.js)
