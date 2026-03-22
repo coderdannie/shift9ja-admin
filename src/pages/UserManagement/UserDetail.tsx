@@ -167,6 +167,7 @@ const UserDetail: React.FC = () => {
         cancelled: apiData.profile?.tasksCancelledCount || 0,
       },
       recentReviews: apiData.recentReviews || [],
+      averageRating: apiData.profile?.averageRating || 0,
     };
   }, [apiData]);
 
@@ -381,7 +382,7 @@ const UserDetail: React.FC = () => {
                     <div className="flex items-center justify-between py-4">
                       <span className="text-[#475467] font-medium text-sm pr-4">Ratings:</span>
                       <div className="flex flex-col items-end">
-                        <span className="text-[#101828] font-bold text-sm">{user.ratingCount > 0 ? `${(apiData.profile?.averageRating || 0).toFixed(1)}/5` : 'N/A'}</span>
+                        <span className="text-[#101828] font-bold text-sm">{user.ratingCount > 0 ? `${(user.averageRating || 0).toFixed(1)}/5` : 'N/A'}</span>
                         <span className="text-[#667085] text-[11px]">({user.ratingCount} ratings)</span>
                       </div>
                     </div>

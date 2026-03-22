@@ -13,6 +13,23 @@ export interface UserProfile {
   [key: string]: any;
 }
 
+export interface Wallet {
+  balance: number;
+  currency: string;
+  totalFunding: number;
+  totalWithdrawal: number;
+  escrowBalance: number;
+}
+
+export interface UserReview {
+  id: string;
+  author: string;
+  date: string;
+  verified: boolean;
+  text: string;
+  rating: number;
+}
+
 export interface User {
   id?: number;
   uuid: string;
@@ -31,6 +48,9 @@ export interface User {
   createdAt?: string;
   updatedAt?: string;
   profile?: UserProfile;
+  isSuspended?: boolean;
+  wallet?: Wallet;
+  recentReviews?: UserReview[];
 }
 
 export interface TopUsersData {

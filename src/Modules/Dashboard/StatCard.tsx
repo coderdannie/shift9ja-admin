@@ -35,9 +35,11 @@ const StatCard: React.FC<StatCardProps> = ({
       <div className={`w-12 h-12 rounded-full ${iconBgColor} flex items-center justify-center`}>
         {Icon && <Icon className={iconColor} size={24} />}
       </div>
-      <div className="flex flex-col gap-1">
-        <p className="text-[#667085] text-sm font-medium">{title}</p>
-        <h3 className="text-[#101828] text-3xl font-black tracking-tight">{value}</h3>
+      <div className="flex flex-col gap-1 min-w-0">
+        <p className="text-[#667085] text-sm font-medium truncate">{title}</p>
+        <h3 className="text-[#101828] text-2xl lg:text-3xl font-black tracking-tight break-words line-clamp-2">
+          {value}
+        </h3>
       </div>
     </div>
   );

@@ -68,7 +68,7 @@ const PaymentEscrow: React.FC = () => {
       taskId: item.metadata?.taskId ? `TC-${item.metadata.taskId.toString().padStart(5, '0')}` : item.reference,
       taskTitle: item.metadata?.description || item.type.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
       amount: `₦${item.amount.toLocaleString()}`,
-      client: `${item.user.firstName} ${item.user.lastName}`,
+      client: item.user ? `${item.user.firstName} ${item.user.lastName}` : 'System',
       helper: 'Platform', // Backend doesn't explicitly show helper in this endpoint yet
       status: item.status // pending, success, failed
     })) || [];
