@@ -1,9 +1,10 @@
 import React, { Suspense, lazy } from 'react';
 import { Navigate } from 'react-router-dom';
 import { PUBLIC_PATHS, PRIVATE_PATHS } from './constants';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 
 const Loadable = (Component: React.ComponentType) => (props: any) => (
-  <Suspense fallback={<div className="p-8 text-center text-primary font-medium">Loading...</div>}>
+  <Suspense fallback={<LoadingSpinner />}>
     <Component {...props} />
   </Suspense>
 );
