@@ -97,7 +97,7 @@ export const PRIVATE_ROUTES = [
     element: <SystemMessages />,
   },
   { path: PRIVATE_PATHS.ADMIN_CHATS, element: <AdminChat /> },
-  { path: PRIVATE_PATHS.ADMIN_CHAT_DETAIL, element: <ChatRoom /> },
+  { path: PRIVATE_PATHS.ADMIN_CHAT_DETAIL, element: <AdminChat /> },
   { path: PRIVATE_PATHS.SETTINGS, element: <Settings /> },
   { path: "/", element: <Navigate to={PRIVATE_PATHS.DASHBOARD} replace /> },
   { path: "*", element: <Navigate to={PRIVATE_PATHS.DASHBOARD} replace /> },

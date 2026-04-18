@@ -4,8 +4,11 @@ import {
   Loader2, 
   MessageCircle,
   Paperclip,
-  CheckCheck
+  CheckCheck,
+  ChevronLeft
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { PRIVATE_PATHS } from '../../../routes/constants';
 import { socketService } from '../../../services/socketService';
 import { 
   useGetInfiniteChatMessages, 
@@ -25,6 +28,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   title = "Chat Session",
   onBack 
 }) => {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -196,24 +200,36 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-[#F9FAFB] rounded-2xl border border-[#F2F4F7] h-full shadow-sm">
+    <div className="flex-1 flex flex-col overflow-hidden bg-[#f0f2f5] h-full border-l border-[#EAECF0]">
       {/* Chat Header */}
-      <div className="px-6 py-4 bg-white border-b border-[#F2F4F7] flex items-center justify-between">
+      <div className="px-4 md:px-6 py-3 md:py-3.5 bg-white border-b border-[#F2F4F7] flex items-center justify-between shadow-sm z-10">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+          <button 
+            onClick={() => navigate(PRIVATE_PATHS.ADMIN_CHATS)}
+            className="md:hidden p-1 -ml-1 hover:bg-gray-100 rounded-lg transition-colors text-gray-500"
+          >
+            <ChevronLeft size={24} />
+          </button>
+          
+          <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-primary/5 flex items-center justify-center text-primary border border-primary/10">
             <MessageCircle size={20} />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-[#101828]">{title}</h3>
-            <p className="text-[10px] text-green-600 font-bold flex items-center gap-1">
+            <h3 className="text-sm font-bold text-[#101828]">Support Session</h3>
+            <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              LIVE SESSION
-            </p>
+              <p className="text-[10px] text-green-600 font-bold uppercase tracking-wider">Active</p>
+            </div>
           </div>
         </div>
       </div>
 
-      <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-6 space-y-4">
+      <div 
+        ref={scrollRef} 
+        onScroll={handleScroll} 
+        className="flex-1 overflow-y-auto p-6 space-y-4"
+        style={{ backgroundImage: `radial-gradient(#d1d1d1 0.5px, transparent 0.5px)`, backgroundSize: '20px 20px' }}
+      >
         {isFetchingNextPage && <div className="flex justify-center py-2"><Loader2 className="w-5 h-5 text-primary animate-spin" /></div>}
         {messages.map((msg) => {
           const isMe = msg.senderType === "ADMIN";
@@ -222,13 +238,23 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                             msg.sender ? `${msg.sender.firstName} ${msg.sender.lastName}` : "User";
           return (
             <div key={msg.uuid || msg.tempId} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-              <div className="max-w-[70%] flex flex-col gap-1">
-                <div className={`p-3 rounded-2xl text-sm shadow-sm ${isMe ? 'bg-primary text-white rounded-tr-none' : 'bg-white text-[#475467] border border-[#F2F4F7] rounded-tl-none'}`}>
-                  {msg.type === 'image' ? <img src={msg.content} alt="Attachment" className="max-w-full rounded-lg cursor-pointer" onClick={() => window.open(msg.content, '_blank')} /> : <p className="leading-relaxed">{msg.content}</p>}
-                </div>
-                <div className={`flex items-center gap-1.5 text-[10px] text-[#98A2B3] font-medium ${isMe ? 'justify-end' : 'justify-start'}`}>
-                  {format(new Date(msg.createdAt), 'HH:mm')}
-                  {isMe && <CheckCheck size={12} className="text-primary" />}
+              <div className={`max-w-[80%] flex flex-col gap-1 ${isMe ? 'items-end' : 'items-start'}`}>
+                <div className={`
+                  p-3 rounded-2xl text-[13px] shadow-sm relative
+                  ${isMe 
+                    ? 'bg-[#dcf8c6] text-[#101828] rounded-tr-none border border-[#c3e6a0]' 
+                    : 'bg-white text-[#101828] border border-[#F2F4F7] rounded-tl-none'}
+                `}>
+                  {msg.type === 'image' ? (
+                    <img src={msg.content} alt="Attachment" className="max-w-full rounded-lg cursor-pointer" onClick={() => window.open(msg.content, '_blank')} />
+                  ) : (
+                    <p className="leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                  )}
+                  
+                  <div className={`flex items-center gap-1.5 text-[9px] mt-1 font-medium ${isMe ? 'justify-end text-[#667781]' : 'justify-start text-[#667781]'}`}>
+                    {format(new Date(msg.createdAt), 'HH:mm')}
+                    {isMe && <CheckCheck size={12} className={msg.status === 'sent' ? 'text-blue-500' : 'text-[#667781]'} />}
+                  </div>
                 </div>
               </div>
             </div>
@@ -244,15 +270,35 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       </div>
 
       {/* Input Area */}
-      <div className="p-4 bg-white border-t border-[#F2F4F7]">
-        <div className="flex items-center gap-2 bg-[#F9FAFB] p-1.5 pr-2 rounded-2xl border border-[#EAECF0]">
-          <button onClick={() => fileInputRef.current?.click()} disabled={isUploading} className="p-2.5 text-[#667085] hover:text-primary rounded-xl">
-            {isUploading ? <Loader2 size={18} className="animate-spin text-primary" /> : <Paperclip size={18} />}
+      <div className="p-4 bg-[#f0f2f5] border-t border-[#F2F4F7] z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => fileInputRef.current?.click()} 
+            disabled={isUploading} 
+            className="p-2 text-[#667085] hover:text-primary transition-colors shrink-0"
+          >
+            {isUploading ? <Loader2 size={24} className="animate-spin text-primary" /> : <Paperclip size={22} />}
           </button>
+          
           <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
-          <input type="text" placeholder="Type your message..." value={inputText} onChange={(e) => setInputText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSend()} className="flex-1 bg-transparent border-none outline-none text-sm py-2" />
-          <button onClick={handleSend} disabled={!inputText.trim()} className={`p-2.5 rounded-xl transition-all ${inputText.trim() ? 'bg-primary text-white' : 'bg-[#F2F4F7] text-[#D0D5DD]'}`}>
-            <Send size={18} fill={inputText.trim() ? "currentColor" : "none"} />
+          
+          <div className="flex-1 bg-white rounded-xl shadow-sm border border-transparent focus-within:border-primary/20 transition-all flex items-center px-4">
+             <input 
+              type="text" 
+              placeholder="Type your message..." 
+              value={inputText} 
+              onChange={(e) => setInputText(e.target.value)} 
+              onKeyDown={(e) => e.key === 'Enter' && handleSend()} 
+              className="flex-1 bg-transparent border-none outline-none text-sm py-3" 
+            />
+          </div>
+
+          <button 
+            onClick={handleSend} 
+            disabled={!inputText.trim()} 
+            className={`p-3 rounded-full transition-all shadow-md ${inputText.trim() ? 'bg-primary text-white hover:scale-105 active:scale-95' : 'bg-gray-200 text-gray-400'}`}
+          >
+            <Send size={20} fill={inputText.trim() ? "currentColor" : "none"} />
           </button>
         </div>
       </div>
