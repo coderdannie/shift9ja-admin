@@ -1,4 +1,7 @@
-import axios, { type InternalAxiosRequestConfig, type AxiosResponse } from "axios";
+import axios, {
+  type InternalAxiosRequestConfig,
+  type AxiosResponse,
+} from "axios";
 import { BASE_URL } from "./url";
 
 const axiosInstance = axios.create({
@@ -19,11 +22,11 @@ export const uploadInstance = axios.create({
 
 const onRequest = (request: InternalAxiosRequestConfig) => {
   const user = JSON.parse(sessionStorage.getItem("user") || "null");
-  
+
   if (user && user.accessToken) {
     request.headers.Authorization = `Bearer ${user.accessToken}`;
   }
-  
+
   return request;
 };
 

@@ -22,12 +22,27 @@ export interface Wallet {
 }
 
 export interface UserReview {
-  id: string;
-  author: string;
-  date: string;
-  verified: boolean;
-  text: string;
+  uuid: string;
+  createdAt: string;
+  updatedAt: string;
   rating: number;
+  comment: string;
+  reviewerRole: string;
+  communicationRating?: number | null;
+  clarityRating?: number | null;
+  cooperationRating?: number | null;
+  workQualityRating?: number | null;
+  professionalismRating?: number | null;
+  timelinessRating?: number | null;
+  reviewer: {
+    uuid: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    avatarUrl?: string | null;
+    isEmailVerified?: boolean;
+    [key: string]: any;
+  };
 }
 
 export interface User {

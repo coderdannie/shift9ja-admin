@@ -9,12 +9,21 @@ interface LayoutProps {
 
 export const AuthLayout: React.FC<LayoutProps> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-      <Header onMenuToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
-      <main className="lg:pl-[280px] pt-[80px]">
+      <Sidebar 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)} 
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+      />
+      <Header 
+        onMenuToggle={() => setIsSidebarOpen(!isSidebarOpen)} 
+        isSidebarCollapsed={isSidebarCollapsed}
+      />
+      <main className={`transition-all duration-300 ease-in-out pt-[80px] ${isSidebarCollapsed ? 'lg:pl-[80px]' : 'lg:pl-[280px]'}`}>
         <div className="p-4 md:p-8">
           {children}
         </div>

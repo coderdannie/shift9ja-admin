@@ -1,5 +1,6 @@
 export interface ApiResponse<T> {
-  status: string;
+  status?: string;
+  success?: boolean;
   message: string;
   data: T;
 }
@@ -22,4 +23,10 @@ export interface QueryParams {
   limit?: number;
   search?: string;
   [key: string]: any;
+}
+
+export interface CursorParams {
+  before?: string | number | null;
+  after?: string | number | null;
+  limit?: number;
 }

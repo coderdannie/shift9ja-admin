@@ -3,11 +3,12 @@ import { Search, Bell, Menu } from 'lucide-react';
 
 interface HeaderProps {
   onMenuToggle?: () => void;
+  isSidebarCollapsed?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
+const Header: React.FC<HeaderProps> = ({ onMenuToggle, isSidebarCollapsed }) => {
   return (
-    <header className="h-[80px] bg-white border-b border-[#EAECF0] flex items-center justify-between px-4 md:px-8 fixed top-0 left-0 lg:left-[280px] right-0 z-40">
+    <header className={`h-[80px] bg-white border-b border-[#EAECF0] flex items-center justify-between px-4 md:px-8 fixed top-0 left-0 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:left-[80px]' : 'lg:left-[280px]'} right-0 z-40`}>
       <div className="flex items-center gap-4 flex-1">
         <button 
           className="lg:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-lg"

@@ -57,3 +57,8 @@ export interface TaskListParams {
   search?: string;
   city?: string;
 }
+
+export interface ResolveDisputePayload {
+  resolutionNotes: string;
+  finalStatus: 'completed' | 'cancelled';
+}

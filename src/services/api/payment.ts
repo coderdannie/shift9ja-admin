@@ -1,5 +1,13 @@
-import { GET_PAYMENT_STATS, GET_TRANSACTIONS, EXPORT_PAYMENTS } from "../url";
+import { 
+  GET_PAYMENT_STATS, 
+  GET_TRANSACTIONS, 
+  EXPORT_PAYMENTS,
+  GET_PAYMENT_PROVIDERS,
+  UPDATE_PAYMENT_PROVIDER,
+  ACTIVATE_PAYMENT_PROVIDER
+} from "../url";
 import axiosInstance from '../axiosInstance';
+import type { ApiResponse, PaymentProviderResponse, PaymentProvider } from '../../types/payment';
 
 export const getPaymentStats = async () => {
   const res = await axiosInstance.get(GET_PAYMENT_STATS);
@@ -46,4 +54,19 @@ export const exportPayments = async (params: any) => {
   window.URL.revokeObjectURL(url);
   
   return response.data;
+};
+
+export const getPaymentProviders = async (): Promise<ApiResponse<PaymentProviderResponse>> => {
+  const res = await axiosInstance.get(GET_PAYMENT_PROVIDERS);
+  return res.data;
+};
+
+export const updatePaymentProvider = async (id: string, data: Partial<PaymentProvider>): Promise<ApiResponse<PaymentProvider>> => {
+  const res = await axiosInstance.patch(UPDATE_PAYMENT_PROVIDER(id), data);
+  return res.data;
+};
+
+export const activatePaymentProvider = async (id: string): Promise<ApiResponse<PaymentProvider>> => {
+  const res = await axiosInstance.patch(ACTIVATE_PAYMENT_PROVIDER(id));
+  return res.data;
 };

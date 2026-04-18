@@ -21,7 +21,11 @@ export const PRIVATE_PATHS = {
   CREATE_ROLE: "/admins/roles/create",
   EDIT_ROLE: "/admins/roles/:id",
   DISPUTE_REPORTS: "/dispute-reports",
+  DISPUTE_DETAIL: "/dispute-reports/:id",
   NOTIFICATIONS: "/notifications",
   SYSTEM_MESSAGES: "/system-messages",
+  WEBSITE_INQUIRIES: "/website-inquiries",
+  ADMIN_CHATS: "/admin-chats",
+  ADMIN_CHAT_DETAIL: "/admin-chats/:id",
   SETTINGS: "/settings",
 };

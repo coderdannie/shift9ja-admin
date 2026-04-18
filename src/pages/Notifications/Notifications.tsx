@@ -85,8 +85,8 @@ const Notifications: React.FC = () => {
 
   const bulkSchema = Yup.object().shape({
     title: Yup.string().required('Title is required').min(5, 'Too short'),
-    message: Yup.string().required('Message content is required').min(20, 'Please provide more detail'),
-    targetAudience: Yup.string().oneOf(['all', 'clients', 'helpers']).required('Required')
+    content: Yup.string().required('Message content is required').min(20, 'Please provide more detail'),
+    targetGroup: Yup.string().oneOf(['all', 'clients', 'helpers']).required('Required')
   });
 
   if (isLoading) {
@@ -194,72 +194,185 @@ const Notifications: React.FC = () => {
 
           {/* Tab 2: Security Policies */}
           <Tab.Panel className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-               <SettingsSection 
-                  title="Authentication Rules" 
-                  description="Enforce multi-factor auth and define password complexity requirements."
-               >
-                 <ToggleRow 
-                    label="Mandatory MFA" 
-                    description="Require all users to verify their identity via Email or SMS during login."
-                    enabled={settings?.mfaEnforced || false}
-                    onChange={(val) => updateSettings({ mfaEnforced: val })}
-                    icon={<Lock size={18} />}
-                 />
-                 <div className="flex flex-col gap-4 mt-2">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-2 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                            <span className="text-[10px] font-bold text-[#98A2B3] uppercase">Min Password length</span>
-                            <div className="flex items-center gap-1.5">
-                                <span className="text-xl font-bold text-[#101828]">{settings?.minPasswordLength}</span>
-                                <span className="text-xs text-[#475467] font-medium">chars</span>
-                            </div>
-                        </div>
-                        <div className="flex flex-col gap-2 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                            <span className="text-[10px] font-bold text-[#98A2B3] uppercase">Expiry Period</span>
-                            <div className="flex items-center gap-1.5">
-                                <span className="text-xl font-bold text-[#101828]">{settings?.passwordExpiryDays}</span>
-                                <span className="text-xs text-[#475467] font-medium">days</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                        {settings?.requireNumbers && <span className="px-2 py-1 bg-green-50 text-green-700 text-[10px] font-bold rounded-lg border border-green-100">Numeric Check</span>}
-                        {settings?.requireUppercase && <span className="px-2 py-1 bg-green-50 text-green-700 text-[10px] font-bold rounded-lg border border-green-100">Uppercase check</span>}
-                        {settings?.requireSpecialCharacters && <span className="px-2 py-1 bg-green-50 text-green-700 text-[10px] font-bold rounded-lg border border-green-100">Symbols required</span>}
-                        {settings?.blockCommonPasswords && <span className="px-2 py-1 bg-red-50 text-red-700 text-[10px] font-bold rounded-lg border border-red-100">Prohibit weak passwords</span>}
-                    </div>
-                 </div>
-               </SettingsSection>
+            <Formik
+              initialValues={{
+                mfaEnforced: settings?.mfaEnforced || false,
+                mfaGracePeriodDays: settings?.mfaGracePeriodDays || 7,
+                minPasswordLength: settings?.minPasswordLength || 8,
+                passwordExpiryDays: settings?.passwordExpiryDays || 90,
+                passwordHistoryCount: settings?.passwordHistoryCount || 5,
 
-               <SettingsSection 
-                  title="Session & Account Security" 
-                  description="Control account lockout duration and session expiration behaviors."
-               >
-                 <ToggleRow 
-                    label="Limit Concurrent Sessions" 
-                    description="Prevent users from being logged in on multiple devices simultaneously."
-                    enabled={settings?.limitConcurrentSessions || false}
-                    onChange={(val) => updateSettings({ limitConcurrentSessions: val })}
-                    icon={<Users size={18} />}
-                 />
-                 <div className="space-y-4">
-                    <div className="flex justify-between items-center p-3.5 bg-gray-50/50 rounded-xl border border-gray-100">
-                       <span className="text-xs font-bold text-[#101828]">Lockout Duration</span>
-                       <span className="text-xs font-medium text-[#475467] bg-white px-2 py-1 rounded-lg shadow-sm border border-gray-100">{settings?.lockoutDurationMinutes} mins</span>
-                    </div>
-                    <div className="flex justify-between items-center p-3.5 bg-gray-50/50 rounded-xl border border-gray-100">
-                       <span className="text-xs font-bold text-[#101828]">Session Idle Timeout</span>
-                       <span className="text-xs font-medium text-[#475467] bg-white px-2 py-1 rounded-lg shadow-sm border border-gray-100">{settings?.sessionTimeoutMinutes} mins</span>
-                    </div>
-                    <div className="flex justify-between items-center p-3.5 bg-gray-50/50 rounded-xl border border-gray-100">
-                       <span className="text-xs font-bold text-[#101828]">Max Login Attempts</span>
-                       <span className="text-xs font-medium text-[#475467] bg-white px-2 py-1 rounded-lg shadow-sm border border-gray-100">{settings?.maxLoginAttempts} times</span>
-                    </div>
-                 </div>
-               </SettingsSection>
-            </div>
+                requireUppercase: settings?.requireUppercase || false,
+                requireNumbers: settings?.requireNumbers || false,
+                requireSpecialCharacters: settings?.requireSpecialCharacters || false,
+                blockCommonPasswords: settings?.blockCommonPasswords || false,
+                limitConcurrentSessions: settings?.limitConcurrentSessions || false,
+                lockoutDurationMinutes: settings?.lockoutDurationMinutes || 15,
+                sessionTimeoutMinutes: settings?.sessionTimeoutMinutes || 30,
+                maxLoginAttempts: settings?.maxLoginAttempts || 5,
+                maxConcurrentSessions: settings?.maxConcurrentSessions || 1,
+              }}
+              enableReinitialize
+              onSubmit={(values) => {
+                updateSettings(values);
+              }}
+            >
+              {({ values, handleChange, handleBlur, setFieldValue, handleSubmit }) => (
+                <Form onSubmit={handleSubmit} className="flex flex-col gap-8">
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <SettingsSection 
+                      title="Authentication Rules" 
+                      description="Enforce multi-factor auth and define password complexity requirements."
+                    >
+                      <ToggleRow 
+                        label="Mandatory MFA" 
+                        description="Require all users to verify their identity via Email or SMS during login."
+                        enabled={values.mfaEnforced}
+                        onChange={(val) => setFieldValue('mfaEnforced', val)}
+                        icon={<Lock size={18} />}
+                      />
+                      {values.mfaEnforced && (
+                        <div className="mt-4">
+                          <FormInput
+                            name="mfaGracePeriodDays"
+                            label="MFA Grace Period (Days)"
+                            type="number"
+                            value={values.mfaGracePeriodDays}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            placeholder="7"
+                          />
+                        </div>
+                      )}
+                      <div className="flex flex-col gap-6 mt-4 pt-4 border-t border-gray-100">
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormInput
+                            name="minPasswordLength"
+                            label="Min Password Length"
+                            type="number"
+                            value={values.minPasswordLength}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            placeholder="8"
+                          />
+                          <FormInput
+                            name="passwordExpiryDays"
+                            label="Password Expiry (Days)"
+                            type="number"
+                            value={values.passwordExpiryDays}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            placeholder="90"
+                          />
+                        </div>
+                        <FormInput
+                          name="passwordHistoryCount"
+                          label="Password History Count"
+                          type="number"
+                          value={values.passwordHistoryCount}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          placeholder="5"
+                        />
+                        <div className="grid grid-cols-1 gap-3">
+                          <ToggleRow 
+                            label="Require Uppercase" 
+                            description="Passwords must contain at least one uppercase letter."
+                            enabled={values.requireUppercase}
+                            onChange={(val) => setFieldValue('requireUppercase', val)}
+                          />
+                          <ToggleRow 
+                            label="Require Numbers" 
+                            description="Passwords must contain at least one numeric digit."
+                            enabled={values.requireNumbers}
+                            onChange={(val) => setFieldValue('requireNumbers', val)}
+                          />
+                          <ToggleRow 
+                            label="Require Symbols" 
+                            description="Passwords must contain at least one special character."
+                            enabled={values.requireSpecialCharacters}
+                            onChange={(val) => setFieldValue('requireSpecialCharacters', val)}
+                          />
+                          <ToggleRow 
+                            label="Block Common Passwords" 
+                            description="Prevent users from using easily guessable or leaked passwords."
+                            enabled={values.blockCommonPasswords}
+                            onChange={(val) => setFieldValue('blockCommonPasswords', val)}
+                          />
+                        </div>
+                      </div>
+                    </SettingsSection>
+
+                    <SettingsSection 
+                      title="Session & Account Security" 
+                      description="Control account lockout duration and session expiration behaviors."
+                    >
+                      <ToggleRow 
+                        label="Limit Concurrent Sessions" 
+                        description="Prevent users from being logged in on multiple devices simultaneously."
+                        enabled={values.limitConcurrentSessions}
+                        onChange={(val) => setFieldValue('limitConcurrentSessions', val)}
+                        icon={<Users size={18} />}
+                      />
+                      <div className="flex flex-col gap-6 mt-4 pt-4 border-t border-gray-100">
+                        {values.limitConcurrentSessions && (
+                          <FormInput
+                            name="maxConcurrentSessions"
+                            label="Max Concurrent Sessions"
+                            type="number"
+                            value={values.maxConcurrentSessions}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            placeholder="1"
+                          />
+                        )}
+                        <div className="grid grid-cols-1 gap-4">
+                          <FormInput
+                            name="lockoutDurationMinutes"
+                            label="Lockout Duration (Minutes)"
+                            type="number"
+                            value={values.lockoutDurationMinutes}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            placeholder="15"
+                          />
+                          <FormInput
+                            name="sessionTimeoutMinutes"
+                            label="Session Idle Timeout (Minutes)"
+                            type="number"
+                            value={values.sessionTimeoutMinutes}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            placeholder="30"
+                          />
+                          <FormInput
+                            name="maxLoginAttempts"
+                            label="Max Login Attempts"
+                            type="number"
+                            value={values.maxLoginAttempts}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            placeholder="5"
+                          />
+                        </div>
+                      </div>
+                    </SettingsSection>
+                  </div>
+                  <div className="flex justify-end p-6 bg-gray-50 rounded-2xl border border-gray-100 italic">
+                     <Button
+                       label="Save Security Policies"
+                       type="submit"
+                       isLoading={isUpdating}
+                       className="px-8 shadow-lg shadow-primary/20"
+                       fullWidth={false}
+                     />
+                  </div>
+                </Form>
+              )}
+            </Formik>
           </Tab.Panel>
+
 
           {/* Tab 3: Bulk Notifications */}
           <Tab.Panel className="animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -269,7 +382,7 @@ const Notifications: React.FC = () => {
                     description="Broadcast important announcements to specific segments of the user base."
                 >
                     <Formik
-                        initialValues={{ title: '', message: '', targetAudience: 'all' as any }}
+                        initialValues={{ title: '', content: '', targetGroup: 'all' as any }}
                         validationSchema={bulkSchema}
                         onSubmit={(values, { resetForm }) => {
                             sendBulk(values as BulkNotificationPayload, {
@@ -299,7 +412,7 @@ const Notifications: React.FC = () => {
                                                     key={target} 
                                                     className="flex flex-col items-center gap-2 p-3 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50 hover:border-primary/30 transition-all has-[:checked]:border-primary has-[:checked]:bg-primary/5 has-[:checked]:ring-2 has-[:checked]:ring-primary/10"
                                                 >
-                                                    <Field type="radio" name="targetAudience" value={target} className="hidden" />
+                                                    <Field type="radio" name="targetGroup" value={target} className="hidden" />
                                                     <span className="text-xs font-bold capitalize">{target}</span>
                                                 </label>
                                             ))}
@@ -310,15 +423,15 @@ const Notifications: React.FC = () => {
                                         <label className="text-sm font-bold text-[#101828]">Message Content</label>
                                         <Field 
                                             as="textarea" 
-                                            name="message" 
+                                            name="content" 
                                             rows={5} 
                                             placeholder="Write your message here..."
                                             className={classNames(
                                                 "w-full h-auto p-4 rounded-xl border outline-none transition-all text-sm leading-relaxed",
-                                                touched.message && errors.message ? "border-red-300 focus:border-red-500" : "border-[#D0D5DD] focus:border-primary focus:ring-4 focus:ring-primary/10"
+                                                touched.content && errors.content ? "border-red-300 focus:border-red-500" : "border-[#D0D5DD] focus:border-primary focus:ring-4 focus:ring-primary/10"
                                             )}
                                         />
-                                        {touched.message && errors.message && <p className="text-[10px] font-bold text-red-500 mt-0.5">{errors.message}</p>}
+                                        {touched.content && errors.content && <p className="text-[10px] font-bold text-red-500 mt-0.5">{errors.content}</p>}
                                      </div>
                                 </div>
 

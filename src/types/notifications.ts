@@ -31,8 +31,27 @@ export interface NotificationSettings {
 
 export interface BulkNotificationPayload {
   title: string;
+  content: string;
+  targetGroup: 'all' | 'clients' | 'helpers';
+}
+
+export interface SystemMessage {
+  uuid: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  title: string;
+  content: string;
+  targetGroup: 'all' | 'clients' | 'helpers';
+  priority: 'normal' | 'high';
+  publishedAt: string;
+  createdById: number;
+}
+
+export interface SystemMessagesResponse {
+  success: boolean;
   message: string;
-  targetAudience: 'all' | 'clients' | 'helpers';
+  data: SystemMessage[];
 }
 
 export interface NotificationSettingsResponse {

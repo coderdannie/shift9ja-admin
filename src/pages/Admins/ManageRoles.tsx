@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { Plus, Shield, ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import RoleTable from '../../Modules/Admins/RoleTable';
-import { PRIVATE_PATHS } from '../../routes/constants';
-import ConfirmModal from '../../components/common/ConfirmModal';
+import React, { useState } from "react";
+import { Plus, Shield, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import RoleTable from "../../components/Modules/Admins/RoleTable";
+import { PRIVATE_PATHS } from "../../routes/constants";
+import ConfirmModal from "../../components/common/ConfirmModal";
 
-import { useGetRoles, useDeleteRole } from '../../services/query/adminMgt';
-import { toast, Toaster } from 'react-hot-toast';
+import { useGetRoles, useDeleteRole } from "../../services/query/adminMgt";
+import { toast, Toaster } from "react-hot-toast";
 
 const ManageRoles: React.FC = () => {
   const navigate = useNavigate();
@@ -27,14 +27,14 @@ const ManageRoles: React.FC = () => {
     if (!roleToDelete) return;
     deleteRole(roleToDelete.uuid, {
       onSuccess: () => {
-        toast.success('Role deleted successfully');
+        toast.success("Role deleted successfully");
         setIsDeleteModalOpen(false);
         setRoleToDelete(null);
         refetch();
       },
       onError: (error: any) => {
-        toast.error(error?.response?.data?.message || 'Failed to delete role');
-      }
+        toast.error(error?.response?.data?.message || "Failed to delete role");
+      },
     });
   };
 
@@ -42,7 +42,7 @@ const ManageRoles: React.FC = () => {
     <div className="flex flex-col gap-8 w-full py-4 px-4 sm:px-6">
       <Toaster position="top-right" />
       {/* Breadcrumbs/Back Navigation */}
-      <button 
+      <button
         onClick={() => navigate(PRIVATE_PATHS.ADMINS)}
         className="flex items-center gap-2 text-[#667085] hover:text-primary transition-colors w-fit"
       >
@@ -57,11 +57,15 @@ const ManageRoles: React.FC = () => {
             <Shield size={24} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-[#101828]">Role Management</h1>
-            <p className="text-[#667085] text-sm mt-1">Define and manage administrative permissions and accessibility.</p>
+            <h1 className="text-2xl font-bold text-[#101828]">
+              Role Management
+            </h1>
+            <p className="text-[#667085] text-sm mt-1">
+              Define and manage administrative permissions and accessibility.
+            </p>
           </div>
         </div>
-        <button 
+        <button
           className="flex items-center justify-center gap-2 bg-primary text-white px-5 py-3 rounded-xl hover:bg-primary-dark transition-all shadow-md shadow-primary/20 font-semibold"
           onClick={() => navigate(PRIVATE_PATHS.CREATE_ROLE)}
         >
@@ -72,22 +76,24 @@ const ManageRoles: React.FC = () => {
 
       {/* Roles Table Container */}
       <div className="bg-white rounded-3xl border border-[#F2F4F7] shadow-sm overflow-hidden min-h-[500px] p-6">
-        <RoleTable 
-          roles={roles} 
-          onEdit={(role) => navigate(PRIVATE_PATHS.EDIT_ROLE.replace(':id', role.uuid))}
+        <RoleTable
+          roles={roles}
+          onEdit={(role) =>
+            navigate(PRIVATE_PATHS.EDIT_ROLE.replace(":id", role.uuid))
+          }
           onDelete={handleDeleteClick}
           isLoading={isLoading}
         />
       </div>
 
       {/* Delete Confirmation Modal */}
-      <ConfirmModal 
+      <ConfirmModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={confirmDelete}
         title="Delete Role"
         description={`Are you sure you want to delete the "${roleToDelete?.name}" role? This might affect ${roleToDelete?.adminsCount || 0} admins assigned to this role.`}
-        confirmLabel={isDeleting ? 'Deleting...' : 'Delete Role'}
+        confirmLabel={isDeleting ? "Deleting..." : "Delete Role"}
         variant="danger"
         isLoading={isDeleting}
       />
