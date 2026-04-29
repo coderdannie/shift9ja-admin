@@ -19,8 +19,12 @@ export const useInviteAdmin = () => {
 };
 
 export const useDeleteAdmin = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (uuid: string) => API.deleteAdmin(uuid),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_ADMINS] });
+    },
   });
 };
 

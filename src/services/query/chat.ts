@@ -1,9 +1,10 @@
-import { useMutation, useQuery, useInfiniteQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { 
   getAdminChats, 
   getChatMessages, 
   getCloudinarySignature, 
-  initiateDisputeChat 
+  initiateDisputeChat,
+  markChatAsRead
 } from '../api/chat';
 import { QUERY_KEYS } from '../queryKeys';
 
@@ -47,5 +48,15 @@ export const useGetCloudinarySignature = (folder: string = 'chats') => {
     queryKey: [QUERY_KEYS.GET_CLOUDINARY_SIGNATURE, folder],
     queryFn: () => getCloudinarySignature(folder),
     staleTime: 1000 * 60 * 5, // 5 mins signature validity usually
+  });
+};
+
+export const useMarkChatAsRead = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (uuid: string) => markChatAsRead(uuid),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_ADMIN_CHATS] });
+    },
   });
 };

@@ -11,9 +11,11 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-import { useGetAdminChats } from '../../../services/query/chat';
+import { useGetAdminChats, useMarkChatAsRead } from '../../../services/query/chat';
 import type { Chat } from '../../../types/chat';
 import { PRIVATE_PATHS } from '../../../routes/constants';
+import { useQueryClient } from '@tanstack/react-query';
+import { QUERY_KEYS } from '../../../services/queryKeys';
 
 interface AdminChatListProps {
   activeId?: string;
@@ -27,6 +29,15 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
   const { data: chatsData, isLoading } = useGetAdminChats({
     type: activeTab === 'all' ? undefined : activeTab,
   });
+
+  const { mutate: markAsRead } = useMarkChatAsRead();
+
+  const handleChatClick = (chat: Chat) => {
+    if (chat.unreadCount > 0) {
+      markAsRead(chat.uuid);
+    }
+    navigate(`${PRIVATE_PATHS.ADMIN_CHATS}/${chat.uuid}`);
+  };
 
   const filteredChats = chatsData?.data?.filter(chat => {
     const searchLower = searchQuery.toLowerCase();
@@ -106,7 +117,7 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
             {filteredChats.map((chat) => (
               <div
                 key={chat.uuid}
-                onClick={() => navigate(`${PRIVATE_PATHS.ADMIN_CHATS}/${chat.uuid}`)}
+                onClick={() => handleChatClick(chat)}
                 className={`
                   p-4 flex items-center justify-between hover:bg-white cursor-pointer transition-all group border-l-4
                   ${activeId === chat.uuid 

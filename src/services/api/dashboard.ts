@@ -17,7 +17,7 @@ export const getTopUsers = async (params = { limit: 10 }): Promise<ApiResponse<T
   return res.data;
 };
 
-export const getPlatformActivity = async (params = { limit: 10 }): Promise<ApiResponse<PlatformActivity[]>> => {
+export const getPlatformActivity = async (params: any = { limit: 10 }): Promise<ApiResponse<any>> => {
   const res = await axiosInstance.get(API.GET_PLATFORM_ACTIVITY, { params });
   return res.data;
 };

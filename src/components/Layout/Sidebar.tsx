@@ -12,11 +12,14 @@ import {
   X,
   Shield,
   Mail,
+  Activity,
+  Terminal,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { PRIVATE_PATHS } from '../../routes/constants';
+import { checkPermission } from '../../utils/permissionUtils';
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -31,16 +34,21 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed, onToggl
 
   const menuItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: PRIVATE_PATHS.DASHBOARD },
-    { label: 'User Management', icon: Users, path: PRIVATE_PATHS.USER_MANAGEMENT },
-    { label: 'Payment & Escrow', icon: Wallet, path: PRIVATE_PATHS.PAYMENT_ESCROW },
-    { label: 'Task Management', icon: Briefcase, path: PRIVATE_PATHS.TASK_MANAGEMENT },
-    { label: 'Admins', icon: Shield, path: PRIVATE_PATHS.ADMINS },
-    { label: 'Dispute & Reports', icon: AlertCircle, path: PRIVATE_PATHS.DISPUTE_REPORTS },
-    { label: 'Admin Chat', icon: MessageSquare, path: PRIVATE_PATHS.ADMIN_CHATS },
-    { label: 'System Messages', icon: Bell, path: PRIVATE_PATHS.SYSTEM_MESSAGES },
-    { label: 'Website Inquiries', icon: Mail, path: PRIVATE_PATHS.WEBSITE_INQUIRIES },
-    { label: 'Settings', icon: Settings, path: PRIVATE_PATHS.SETTINGS },
+    { label: 'User Management', icon: Users, path: PRIVATE_PATHS.USER_MANAGEMENT, permission: 'user_management.view_users' },
+    { label: 'Payment & Escrow', icon: Wallet, path: PRIVATE_PATHS.PAYMENT_ESCROW, permission: 'finance_escrow.view_escrow' },
+    { label: 'Task Management', icon: Briefcase, path: PRIVATE_PATHS.TASK_MANAGEMENT, permission: 'task_management.view_tasks' },
+    { label: 'Admins', icon: Shield, path: PRIVATE_PATHS.ADMINS, permission: 'admin_management.manage_admins' },
+    { label: 'Dispute & Reports', icon: AlertCircle, path: PRIVATE_PATHS.DISPUTE_REPORTS, permission: 'dispute_management.view_reports' },
+    { label: 'Admin Chat', icon: MessageSquare, path: PRIVATE_PATHS.ADMIN_CHATS, permission: 'chats.view_chats' },
+    { label: 'System Messages', icon: Bell, path: PRIVATE_PATHS.SYSTEM_MESSAGES, permission: 'system_communications.view_messages' },
+    { label: 'Webhooks', icon: Terminal, path: PRIVATE_PATHS.WEBHOOKS, permission: 'webhook_management.view_webhooks' },
+    { label: 'Website Inquiries', icon: Mail, path: PRIVATE_PATHS.WEBSITE_INQUIRIES, permission: 'website.view_inquiries' },
+    { label: 'Settings', icon: Settings, path: PRIVATE_PATHS.SETTINGS, permission: 'settings.view_settings' },
   ];
+
+  const visibleMenuItems = menuItems.filter(item => 
+    !item.permission || checkPermission(item.permission)
+  );
 
   const handleNavigate = (path: string) => {
     navigate(path);
@@ -92,7 +100,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed, onToggl
         </div>
 
         <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
-          {menuItems.map((item) => (
+          {visibleMenuItems.map((item) => (
             <div
               key={item.path}
               title={isCollapsed ? item.label : undefined}

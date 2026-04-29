@@ -28,4 +28,5 @@ export const PRIVATE_PATHS = {
   ADMIN_CHATS: "/admin-chats",
   ADMIN_CHAT_DETAIL: "/admin-chats/:id",
   SETTINGS: "/settings",
+  WEBHOOKS: "/webhooks",
 };

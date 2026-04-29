@@ -30,3 +30,8 @@ export const getCloudinarySignature = async (folder: string = 'chats'): Promise<
   const res = await axiosInstance.get(`${API.GET_CLOUDINARY_SIGNATURE}?folder=${folder}`);
   return res.data;
 };
+
+export const markChatAsRead = async (uuid: string): Promise<ApiResponse<any>> => {
+  const res = await axiosInstance.post(API.MARK_CHAT_AS_READ(uuid));
+  return res.data;
+};

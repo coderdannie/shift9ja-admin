@@ -3,13 +3,29 @@ import { useLocation, useRoutes } from 'react-router-dom';
 import { AuthLayout, NonAuthLayout } from '../components/Layout/PageLayout';
 import { PRIVATE_ROUTES, PUBLIC_ROUTES } from './routes';
 
+import { Navigate } from 'react-router-dom';
+import { checkPermission } from '../utils/permissionUtils';
+import { PRIVATE_PATHS } from './constants';
+
 const PublicRouteWrapper = () => {
   const routes = useRoutes(PUBLIC_ROUTES);
   return routes;
 };
 
+const PermissionProtectedRoute = ({ element, permission }: { element: React.ReactNode, permission?: string }) => {
+  if (permission && !checkPermission(permission)) {
+    return <Navigate to={PRIVATE_PATHS.DASHBOARD} replace />;
+  }
+  return <>{element}</>;
+};
+
 const PrivateRouteWrapper = () => {
-  const routes = useRoutes(PRIVATE_ROUTES);
+  const processedRoutes = PRIVATE_ROUTES.map(route => ({
+    ...route,
+    element: <PermissionProtectedRoute element={route.element} permission={route.permission} />
+  }));
+  
+  const routes = useRoutes(processedRoutes);
   return routes;
 };
 

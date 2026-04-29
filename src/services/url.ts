@@ -74,4 +74,9 @@ export const GET_ADMIN_CHATS = "admin/chats";
 export const INITIATE_DISPUTE_CHAT = "admin/chats/initiate-dispute";
 export const GET_CHAT_MESSAGES = (uuid: string) =>
   `admin/chats/${uuid}/messages`;
+export const MARK_CHAT_AS_READ = (uuid: string) => `admin/chats/${uuid}/read`;
 export const GET_CLOUDINARY_SIGNATURE = "admin/cloudinary/signature";
+
+// Webhooks
+export const GET_WEBHOOKS = "admin/webhooks";
+export const RETRY_WEBHOOK = (uuid: string) => `admin/webhooks/${uuid}/retry`;
