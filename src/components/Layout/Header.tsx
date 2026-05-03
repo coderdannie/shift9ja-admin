@@ -35,9 +35,27 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, isSidebarCollapsed }) => 
       
       <div className="flex items-center gap-3 md:gap-4">
         <HeaderActivityDropdown />
-        <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs ring-2 ring-white ring-offset-2 ring-gray-100">
-          OS
-        </div>
+        {(() => {
+          const [user, setUser] = React.useState(JSON.parse(sessionStorage.getItem('user') || 'null'));
+          
+          React.useEffect(() => {
+            const handleStorageChange = () => {
+              setUser(JSON.parse(sessionStorage.getItem('user') || 'null'));
+            };
+            window.addEventListener('storage', handleStorageChange);
+            return () => window.removeEventListener('storage', handleStorageChange);
+          }, []);
+
+          return (
+            <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs ring-2 ring-white ring-offset-2 ring-gray-100 overflow-hidden">
+              {user?.avatarUrl ? (
+                <img src={user.avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                `${user?.firstName?.[0] || 'A'}${user?.lastName?.[0] || 'D'}`
+              )}
+            </div>
+          );
+        })()}
       </div>
     </header>
   );

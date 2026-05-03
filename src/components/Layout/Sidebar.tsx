@@ -115,13 +115,26 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed, onToggl
 
         <div className="p-4 border-t border-[#EAECF0]">
           {(() => {
-            const user = JSON.parse(sessionStorage.getItem('user') || 'null');
+            const [user, setUser] = React.useState(JSON.parse(sessionStorage.getItem('user') || 'null'));
+            
+            React.useEffect(() => {
+              const handleStorageChange = () => {
+                setUser(JSON.parse(sessionStorage.getItem('user') || 'null'));
+              };
+              window.addEventListener('storage', handleStorageChange);
+              return () => window.removeEventListener('storage', handleStorageChange);
+            }, []);
+
             return (
               <div className={`flex items-center ${isCollapsed ? 'justify-center p-0' : 'gap-3 p-2'}`}>
                 <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden shrink-0">
-                   <div className="w-full h-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                     {user?.firstName?.[0] || 'A'}
-                   </div>
+                   {user?.avatarUrl ? (
+                     <img src={user.avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                   ) : (
+                     <div className="w-full h-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                       {user?.firstName?.[0] || 'A'}
+                     </div>
+                   )}
                 </div>
                 {!isCollapsed && (
                   <>

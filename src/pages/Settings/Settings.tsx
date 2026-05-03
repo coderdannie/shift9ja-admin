@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import PaymentProviders from "../../components/Modules/Settings/PaymentProviders";
 import NotificationChannels from "../../components/Modules/Settings/NotificationChannels";
 import SecurityPolicies from "../../components/Modules/Settings/SecurityPolicies";
+import ProfileSettings from "../../components/Modules/Settings/ProfileSettings";
 import {
-  Settings as SettingsIcon,
+  User as UserIcon,
   CreditCard,
   Bell,
   Shield,
@@ -12,11 +13,11 @@ import {
 } from "lucide-react";
 
 const Settings: React.FC = () => {
-  const [activeTab, setActiveTab] = useState("payment");
+  const [activeTab, setActiveTab] = useState("profile");
 
   const tabs = [
+    { id: "profile", label: "Profile Settings", icon: UserIcon },
     { id: "payment", label: "Payment Configuration", icon: CreditCard },
-    { id: "general", label: "General Settings", icon: SettingsIcon },
     { id: "notifications", label: "Notifications", icon: Bell },
     { id: "security", label: "Security & Access", icon: Shield },
   ];
@@ -88,23 +89,7 @@ const Settings: React.FC = () => {
              {activeTab === "payment" && <PaymentProviders />}
              {activeTab === "notifications" && <NotificationChannels />}
              {activeTab === "security" && <SecurityPolicies />}
-
-             {(activeTab === "general") && (
-                <div className="flex flex-col items-center justify-center h-full min-h-[500px] text-center space-y-4 max-w-sm mx-auto">
-                  <div className="w-20 h-20 rounded-[24px] bg-white border border-gray-100 shadow-sm flex items-center justify-center text-gray-400 rotate-3">
-                    <Lock size={36} />
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="text-xl font-black text-[#101828]">
-                      Under Construction
-                    </h3>
-                    <p className="text-sm text-[#667085] font-medium leading-relaxed">
-                      The {tabs.find((t) => t.id === activeTab)?.label} module is
-                      currently being finalized for production release.
-                    </p>
-                  </div>
-                </div>
-             )}
+             {activeTab === "profile" && <ProfileSettings />}
           </div>
         </main>
       </div>
