@@ -11,7 +11,7 @@ export interface User {
   taskPosted?: number;
   tasksCompleted?: number;
   disputeCount: number;
-  status: "verified" | "not_verified" | "suspended";
+  status: "verified" | "not_verified" | "suspended" | "pending" | "rejected";
 }
 
 interface UserTableProps {
@@ -45,6 +45,20 @@ const statusMap = {
     bg: "bg-amber-50",
     text: "text-amber-700",
     border: "border-amber-200",
+  },
+  pending: {
+    label: "Pending",
+    dot: "bg-blue-500",
+    bg: "bg-blue-50",
+    text: "text-blue-700",
+    border: "border-blue-200",
+  },
+  rejected: {
+    label: "Rejected",
+    dot: "bg-rose-500",
+    bg: "bg-rose-50",
+    text: "text-rose-700",
+    border: "border-rose-200",
   },
 };
 

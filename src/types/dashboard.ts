@@ -10,6 +10,16 @@ export interface UserProfile {
   rating?: number;
   clientTasksPosted?: number;
   helperTasksCompleted?: number;
+  verificationStatus?: string;
+  [key: string]: any;
+}
+
+export interface KycVerification {
+  uuid: string;
+  status: string;
+  type?: string | null;
+  idNumber?: string | null;
+  failureReason?: string | null;
   [key: string]: any;
 }
 
@@ -66,6 +76,7 @@ export interface User {
   isSuspended?: boolean;
   wallet?: Wallet;
   recentReviews?: UserReview[];
+  kycVerification?: KycVerification;
 }
 
 export interface TopUsersData {

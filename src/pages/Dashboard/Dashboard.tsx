@@ -79,7 +79,7 @@ const Dashboard = () => {
     avatar:
       user.avatarUrl ||
       `https://ui-avatars.com/api/?name=${user.firstName}+${user.lastName}&background=random`,
-    isVerified: user.profile?.verificationStatus === "verified",
+    isVerified: user.kycVerification?.status === "approved" || user.profile?.verificationStatus === "verified",
   });
 
   return (

@@ -81,11 +81,11 @@ const UserManagement = () => {
       taskPosted: item.profile?.tasksPostedCount || 0,
       tasksCompleted: item.profile?.tasksCompletedCount || 0,
       disputeCount: item.profile?.tasksDisputedCount || 0,
-      status: item.isSuspended
+      status: (item.isSuspended || item.status === "SUSPENDED")
         ? "suspended"
-        : item.profile?.verificationStatus === "verified"
+        : item.kycVerification?.status === "approved"
           ? "verified"
-          : "not_verified",
+          : (item.kycVerification?.status || "not_verified"),
     }));
   }, [userData]);
 
