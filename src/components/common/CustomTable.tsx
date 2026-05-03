@@ -1,5 +1,5 @@
-import React from 'react';
-import TableSkeleton from '../Loaders/TableLoader';
+import React from "react";
+import TableSkeleton from "../Loaders/TableLoader";
 
 interface CustomTableProps {
   /** Column header labels, in the same order as the <td> cells you render in children */
@@ -10,35 +10,25 @@ interface CustomTableProps {
   skeletonRows?: number;
   /** Table body rows — render your <tr> elements here */
   children: React.ReactNode;
+  /** Optional minimum height for the table container */
+  minHeight?: string;
 }
 
 /**
  * Reusable table shell.
- *
- * Usage:
- * ```tsx
- * <CustomTable headers={['Name', 'Email', 'Status']} isLoading={loading}>
- *   {data.map(row => (
- *     <tr key={row.id}>
- *       <td className="px-6 py-4">{row.name}</td>
- *       <td className="px-6 py-4">{row.email}</td>
- *       <td className="px-6 py-4">{row.status}</td>
- *     </tr>
- *   ))}
- * </CustomTable>
- *
- * // Pagination lives outside — use the shared <Pagination /> component
- * <Pagination currentPage={page} totalPages={total} onPageChange={setPage} />
- * ```
  */
 const CustomTable: React.FC<CustomTableProps> = ({
   headers,
   isLoading = false,
-  skeletonRows = 4,
+  skeletonRows = 10,
   children,
+  minHeight = "600px",
 }) => (
   <div className="relative w-full overflow-x-auto">
-    <div className="w-full overflow-auto max-h-[500px] rounded-2xl border border-[#F2F4F7] shadow-sm">
+    <div 
+      className="w-full overflow-auto rounded-2xl border border-[#F2F4F7] shadow-sm bg-white"
+      style={{ minHeight, maxHeight: "calc(100vh - 300px)" }}
+    >
       <table className="w-full min-w-[600px] font-semibold text-[#344054] text-sm border-collapse">
         {/* Header */}
         <thead className="bg-[#F9FAFB] sticky top-0 z-10">
