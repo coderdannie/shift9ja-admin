@@ -13,8 +13,8 @@ export interface TaskLocation {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
-  latitude: string;
-  longitude: string;
+  latitude: number;
+  longitude: number;
   streetAddress: string;
   city: string;
   state: string;
@@ -23,6 +23,18 @@ export interface TaskLocation {
     type: "Point";
     coordinates: [number, number];
   };
+}
+
+export interface TaskCategory {
+  uuid: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  name: string;
+  slug: string;
+  icon?: string;
+  description?: string;
+  isActive?: boolean;
 }
 
 export interface TaskItem {
@@ -35,7 +47,7 @@ export interface TaskItem {
   helperId?: number | null;
   title: string;
   clientNote: string;
-  category: string;
+  category: TaskCategory;
   budget: string;
   status: TaskStatus;
   dueDate: string;

@@ -276,7 +276,7 @@ const TaskDetail: React.FC = () => {
             </span>
             <span className="w-1 h-1 bg-gray-200 rounded-full"></span>
             <span className="flex items-center gap-1.5 font-medium">
-              <Tag size={16} className="text-primary" /> {task.category || "Uncategorized"}
+              <Tag size={16} className="text-primary" /> {task.category?.name || "Uncategorized"}
             </span>
             <span className="w-1 h-1 bg-gray-200 rounded-full"></span>
             <span className="flex items-center gap-1.5 font-medium">
