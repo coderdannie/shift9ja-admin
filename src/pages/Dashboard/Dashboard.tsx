@@ -71,15 +71,16 @@ const Dashboard = () => {
   ];
 
   const mapUserToRatedItem = (user: any) => ({
-    id: user.uuid,
+    id: user.uuid || user.id?.toString(),
     name: `${user.firstName} ${user.lastName}`,
-    count:
-      user.profile?.tasksPostedCount || user.profile?.tasksCompletedCount || 0,
+    count: user.tasksPostedCount || user.tasksCompletedCount || 0,
     rating: parseFloat(user.profile?.rating || "0"),
     avatar:
       user.avatarUrl ||
       `https://ui-avatars.com/api/?name=${user.firstName}+${user.lastName}&background=random`,
-    isVerified: user.kycVerification?.status === "approved" || user.profile?.verificationStatus === "verified",
+    isVerified:
+      user.kycVerification?.status === "approved" ||
+      user.profile?.verificationStatus === "verified",
   });
 
   return (

@@ -77,6 +77,8 @@ export interface User {
   wallet?: Wallet;
   recentReviews?: UserReview[];
   kycVerification?: KycVerification;
+  tasksPostedCount?: number;
+  tasksCompletedCount?: number;
 }
 
 export interface TopUsersData {
