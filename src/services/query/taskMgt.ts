@@ -2,7 +2,7 @@ import { useQuery, useMutation, type UseQueryOptions } from '@tanstack/react-que
 import { QUERY_KEYS } from '../queryKeys';
 import { getTaskStats, getTasks, getTaskDetails, resolveDispute } from '../api/taskMgt';
 import type { ApiResponse, PaginatedResponse, TaskItem, TaskListParams, ResolveDisputePayload } from '../../types';
-
+import { toast } from 'react-hot-toast';
 
 export const useGetTaskDetails = (id: string, options?: Partial<UseQueryOptions<ApiResponse<TaskItem>>>) => {
   return useQuery({
@@ -32,6 +32,11 @@ export const useResolveDispute = () => {
   return useMutation({
     mutationFn: ({ uuid, payload }: { uuid: string; payload: ResolveDisputePayload }) => 
       resolveDispute(uuid, payload),
+    onSuccess: () => {
+      toast.success("Dispute resolved successfully!");
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Failed to resolve dispute");
+    }
   });
 };
-

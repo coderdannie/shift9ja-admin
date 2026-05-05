@@ -146,13 +146,6 @@ const ProfileSettings: React.FC = () => {
                 lastName: values.lastName,
                 phoneNumber: values.phoneNumber,
                 avatarUrl: avatar || undefined,
-              }, {
-                onSuccess: () => {
-                  toast.success("Profile updated successfully!");
-                },
-                onError: (error: any) => {
-                  toast.error(error?.response?.data?.message || "Failed to update profile");
-                }
               });
             }}
           >
