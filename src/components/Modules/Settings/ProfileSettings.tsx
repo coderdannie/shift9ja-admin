@@ -1,41 +1,82 @@
-import React, { useState, useRef } from "react";
-import { User, Mail, Camera, BadgeCheck, ShieldCheck, Check } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { User, Mail, Camera, BadgeCheck, ShieldCheck, Check, Phone, Loader2 } from "lucide-react";
 import Button from "../../common/Button";
 import FormInput from "../../common/FormInput";
 import { Form, Formik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-hot-toast";
+import { useGetAdminProfile, useUpdateAdminProfile } from "../../../services/query/admin";
+import { useGetCloudinarySignature } from "../../../services/query/chat";
 
 const profileSchema = Yup.object({
   firstName: Yup.string().required("First name is required"),
   lastName: Yup.string().required("Last name is required"),
   email: Yup.string().email("Invalid email").required("Email is required"),
+  phoneNumber: Yup.string().required("Phone number is required"),
 });
 
 const ProfileSettings: React.FC = () => {
-  // Get user from sessionStorage
-  const userJson = sessionStorage.getItem("user");
-  const adminData = userJson ? JSON.parse(userJson) : null;
-
-  const [avatar, setAvatar] = useState(adminData?.avatarUrl || null);
+  const { data: profileData, isLoading: isLoadingProfile } = useGetAdminProfile();
+  const { mutate: updateProfile, isPending: isUpdating } = useUpdateAdminProfile();
+  const { data: signatureData } = useGetCloudinarySignature('avatars');
+  
+  const adminData = profileData?.data;
+  const [avatar, setAvatar] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    if (adminData?.avatarUrl) {
+      setAvatar(adminData.avatarUrl);
+    }
+  }, [adminData]);
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatar(reader.result as string);
-        toast.success("Profile picture updated!");
-      };
-      reader.readAsDataURL(file);
+    if (!file || !signatureData?.data) return;
+
+    setIsUploading(true);
+    const { signature, timestamp, api_key, cloud_name } = signatureData.data;
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("api_key", api_key);
+    formData.append("timestamp", timestamp.toString());
+    formData.append("signature", signature);
+    formData.append("folder", "avatars");
+
+    try {
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloud_name}/image/upload`, { 
+        method: "POST", 
+        body: formData 
+      });
+      const data = await res.json();
+      if (data.secure_url) {
+        setAvatar(data.secure_url);
+        toast.success("Image uploaded! Don't forget to save changes.");
+      } else {
+        toast.error("Upload failed");
+      }
+    } catch (err) {
+      console.error("Image upload failed:", err);
+      toast.error("Error uploading image");
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
+
+  if (isLoadingProfile) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+      </div>
+    );
+  }
 
   if (!adminData) return null;
 
   return (
-    <div className="max-w-2xl mx-auto py-4">
+    <div className="max-w-2xl mx-auto py-4 animate-in fade-in duration-500">
       <div className="flex flex-col gap-10">
         {/* Profile Header */}
         <div className="flex flex-col items-center gap-6">
@@ -46,10 +87,16 @@ const ProfileSettings: React.FC = () => {
               ) : (
                 <User size={64} className="text-primary" />
               )}
+              {isUploading && (
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                  <Loader2 size={32} className="text-white animate-spin" />
+                </div>
+              )}
             </div>
             <button 
               onClick={() => fileInputRef.current?.click()}
-              className="absolute -bottom-2 -right-2 p-3 bg-white rounded-2xl shadow-lg border border-gray-100 text-primary hover:bg-primary hover:text-white transition-all transform hover:rotate-12"
+              disabled={isUploading}
+              className="absolute -bottom-2 -right-2 p-3 bg-white rounded-2xl shadow-lg border border-gray-100 text-primary hover:bg-primary hover:text-white transition-all transform hover:rotate-12 disabled:opacity-50"
             >
               <Camera size={20} />
             </button>
@@ -69,7 +116,7 @@ const ProfileSettings: React.FC = () => {
               </h2>
               <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100 text-[10px] font-black uppercase tracking-widest shadow-sm">
                 <BadgeCheck size={12} />
-                {adminData.role || "Admin"}
+                {adminData.role?.name || "Admin"}
               </div>
             </div>
             <p className="text-[#667085] font-medium">{adminData.email}</p>
@@ -90,21 +137,26 @@ const ProfileSettings: React.FC = () => {
               firstName: adminData.firstName || "",
               lastName: adminData.lastName || "",
               email: adminData.email || "",
+              phoneNumber: adminData.phoneNumber || "",
             }}
             validationSchema={profileSchema}
-            onSubmit={(values, { setSubmitting }) => {
-              setTimeout(() => {
-                // Update session storage for mock persist
-                const updatedUser = { ...adminData, ...values, avatarUrl: avatar };
-                sessionStorage.setItem("user", JSON.stringify(updatedUser));
-                toast.success("Profile updated successfully!");
-                setSubmitting(false);
-                // Trigger a page reload or event to update UI in other components if needed
-                window.dispatchEvent(new Event('storage'));
-              }, 1000);
+            onSubmit={(values) => {
+              updateProfile({
+                firstName: values.firstName,
+                lastName: values.lastName,
+                phoneNumber: values.phoneNumber,
+                avatarUrl: avatar || undefined,
+              }, {
+                onSuccess: () => {
+                  toast.success("Profile updated successfully!");
+                },
+                onError: (error: any) => {
+                  toast.error(error?.response?.data?.message || "Failed to update profile");
+                }
+              });
             }}
           >
-            {({ values, errors, touched, handleChange, handleBlur, isSubmitting, dirty }) => (
+            {({ values, errors, touched, handleChange, handleBlur, dirty }) => (
               <Form className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <FormInput
@@ -129,24 +181,36 @@ const ProfileSettings: React.FC = () => {
                   />
                 </div>
 
-                <FormInput
-                  label="Email Address"
-                  name="email"
-                  type="email"
-                  value={values.email}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.email && errors.email}
-                  icon={<Mail size={18} />}
-                  disabled
-                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <FormInput
+                    label="Email Address"
+                    name="email"
+                    type="email"
+                    value={values.email}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={touched.email && errors.email}
+                    icon={<Mail size={18} />}
+                    disabled
+                  />
+                  <FormInput
+                    label="Phone Number"
+                    name="phoneNumber"
+                    type="text"
+                    value={values.phoneNumber}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={touched.phoneNumber && errors.phoneNumber}
+                    icon={<Phone size={18} />}
+                  />
+                </div>
 
                 <div className="pt-4">
                   <Button
                     label="Save Profile Changes"
                     type="submit"
-                    isLoading={isSubmitting}
-                    disabled={(!dirty && avatar === adminData.avatarUrl) || isSubmitting}
+                    isLoading={isUpdating}
+                    disabled={(!dirty && avatar === adminData.avatarUrl) || isUpdating || isUploading}
                     icon={<Check size={18} />}
                   />
                 </div>

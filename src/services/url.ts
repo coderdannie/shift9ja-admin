@@ -61,6 +61,7 @@ export const DELETE_ADMIN = (uuid: string) => `admin/management/${uuid}`;
 export const GET_ADMIN_DETAILS = (uuid: string) => `admin/management/${uuid}`;
 export const TOGGLE_ADMIN_STATUS = (uuid: string) =>
   `admin/management/${uuid}/toggle-status`;
+export const ADMIN_PROFILE = "admin/profile";
 
 // Payment Providers
 export const GET_PAYMENT_PROVIDERS = "admin/payment-providers";

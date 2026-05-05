@@ -48,3 +48,10 @@ export interface CreateRolePayload {
 }
 
 export type UpdateRolePayload = CreateRolePayload;
+
+export interface UpdateAdminProfilePayload {
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+  avatarUrl?: string;
+}
