@@ -1,8 +1,11 @@
 import React from "react";
-import { Filter, Download } from "lucide-react";
+import { Filter, Download, BarChart3 } from "lucide-react";
 import Button from "../../common/Button";
+import { useNavigate } from "react-router-dom";
+import { PRIVATE_PATHS } from "../../../routes/constants";
 
 const DashboardHeader: React.FC = () => {
+  const navigate = useNavigate();
   const user = JSON.parse(sessionStorage.getItem("user") || "null");
   const firstName = user?.firstName || "Admin";
 
@@ -19,11 +22,12 @@ const DashboardHeader: React.FC = () => {
 
       <div className="flex items-center gap-3">
         <Button
-          label="Filter"
+          label="Full Analytics"
           variant="outline"
           fullWidth={false}
           className="!h-10 border-[#F2F4F7]"
-          icon={<Filter size={18} />}
+          icon={<BarChart3 size={18} />}
+          onClick={() => navigate(PRIVATE_PATHS.ANALYTICS)}
         />
         <Button
           label="Export Data"

@@ -35,7 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed, onToggl
 
   const menuItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: PRIVATE_PATHS.DASHBOARD },
-    { label: 'Analytics', icon: BarChart3, path: PRIVATE_PATHS.ANALYTICS, permission: 'dashboard.view_analytics' },
+    { label: 'Analytics', icon: BarChart3, path: PRIVATE_PATHS.ANALYTICS },
     { label: 'User Management', icon: Users, path: PRIVATE_PATHS.USER_MANAGEMENT, permission: 'user_management.view_users' },
     { label: 'Payment & Escrow', icon: Wallet, path: PRIVATE_PATHS.PAYMENT_ESCROW, permission: 'finance_escrow.view_escrow' },
     { label: 'Task Management', icon: Briefcase, path: PRIVATE_PATHS.TASK_MANAGEMENT, permission: 'task_management.view_tasks' },

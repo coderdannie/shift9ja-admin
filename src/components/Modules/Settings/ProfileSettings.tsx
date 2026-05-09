@@ -116,7 +116,7 @@ const ProfileSettings: React.FC = () => {
               </h2>
               <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100 text-[10px] font-black uppercase tracking-widest shadow-sm">
                 <BadgeCheck size={12} />
-                {adminData.role?.name || "Admin"}
+                {adminData.roles?.[0]?.name || "Admin"}
               </div>
             </div>
             <p className="text-[#667085] font-medium">{adminData.email}</p>

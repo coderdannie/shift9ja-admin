@@ -85,7 +85,6 @@ export const PRIVATE_ROUTES = [
   {
     path: PRIVATE_PATHS.ANALYTICS,
     element: <Analytics />,
-    permission: "dashboard.view_analytics",
   },
   {
     path: PRIVATE_PATHS.USER_MANAGEMENT,
