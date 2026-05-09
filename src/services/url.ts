@@ -20,11 +20,17 @@ export const GET_PAYMENT_STATS = "admin/payments/stats";
 export const GET_TRANSACTIONS = "admin/payments/transactions";
 export const EXPORT_PAYMENTS = "admin/payments/export";
 
-// Dashboard
+// Dashboard & Analytics
 export const GET_DASHBOARD_SUMMARY = "admin/dashboard/summary";
 export const GET_TOP_USERS = "admin/dashboard/top-users";
 export const GET_PLATFORM_ACTIVITY = "admin/dashboard/activity";
 export const GET_DASHBOARD_ALERTS = "admin/dashboard/alerts";
+export const GET_USER_GEOGRAPHY = "admin/dashboard/user-geography";
+export const GET_USER_HEATMAP = "admin/dashboard/heatmap";
+export const GET_MARKET_HEALTH = "admin/dashboard/market-health";
+export const GET_REVENUE_ANALYTICS = "admin/dashboard/revenue-analytics";
+export const GET_RETENTION_COHORTS = "admin/dashboard/retention-cohorts";
+export const GET_FULFILLMENT_METRICS = "admin/dashboard/fulfillment-metrics";
 
 // Roles & Permissions
 export const GET_ROLES = "admin/roles";

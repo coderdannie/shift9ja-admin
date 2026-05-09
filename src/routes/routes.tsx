@@ -68,6 +68,7 @@ const ChatRoom = Loadable(
 const WebhookManagement = Loadable(
   lazy(() => import("../pages/WebhookManagement/WebhookManagement")),
 );
+const Analytics = Loadable(lazy(() => import("../pages/Analytics/Analytics")));
 
 export const PUBLIC_ROUTES = [
   { path: PUBLIC_PATHS.LOGIN, element: <Login /> },
@@ -81,7 +82,16 @@ export const PUBLIC_ROUTES = [
 
 export const PRIVATE_ROUTES = [
   { path: PRIVATE_PATHS.DASHBOARD, element: <Dashboard /> },
-  { path: PRIVATE_PATHS.USER_MANAGEMENT, element: <UserManagement />, permission: 'user_management.view_users' },
+  {
+    path: PRIVATE_PATHS.ANALYTICS,
+    element: <Analytics />,
+    permission: "dashboard.view_analytics",
+  },
+  {
+    path: PRIVATE_PATHS.USER_MANAGEMENT,
+    element: <UserManagement />,
+    permission: "user_management.view_users",
+  },
   { path: PRIVATE_PATHS.USER_DETAIL, element: <UserDetail />, permission: 'user_management.view_users' },
   { path: PRIVATE_PATHS.USER_EDIT, element: <UserDetail />, permission: 'user_management.edit_users' },
   { path: PRIVATE_PATHS.TASK_MANAGEMENT, element: <TaskManagement />, permission: 'task_management.view_tasks' },

@@ -9,6 +9,7 @@ export const PUBLIC_PATHS = {
 
 export const PRIVATE_PATHS = {
   DASHBOARD: "/dashboard",
+  ANALYTICS: "/analytics",
   USER_MANAGEMENT: "/user-management",
   USER_DETAIL: "/user-management/:id",
   USER_EDIT: "/user-management/:id/edit",

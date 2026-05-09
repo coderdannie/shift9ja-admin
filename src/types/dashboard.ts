@@ -109,3 +109,53 @@ export interface DashboardAlertsData {
   openDisputes: number;
   [key: string]: any;
 }
+
+export interface UserGeography {
+  state: string;
+  city: string;
+  userCount: string;
+}
+
+export interface UserHeatmap {
+  lat: number;
+  lng: number;
+  userId: number;
+}
+
+export interface MarketHealth {
+  state: string;
+  city: string;
+  helperCount: string;
+  clientCount: string;
+  helperToClientRatio: string;
+}
+
+export interface RevenueAnalytics {
+  state: string;
+  city: string;
+  totalRevenue: string;
+  averageOrderValue: string;
+}
+
+export interface RetentionCohort {
+  state: string;
+  city: string;
+  totalUsers: string;
+  active30Days: string;
+  active60Days: string;
+  active90Days: string;
+}
+
+export interface FulfillmentMetrics {
+  state: string;
+  city: string;
+  avgFulfillmentHours: string;
+}
+
+export type AnalyticsFilter = "THIS_WEEK" | "THIS_MONTH" | "THIS_YEAR";
+
+export interface AnalyticsQueryParams {
+  startDate?: string;
+  endDate?: string;
+  filter?: AnalyticsFilter;
+}
