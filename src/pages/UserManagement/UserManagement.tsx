@@ -77,7 +77,7 @@ const UserManagement = () => {
       fullName: `${item.firstName} ${item.lastName}`,
       email: item.email,
       phone: item.phoneNumber,
-      city: item.profile?.address || "N/A",
+      city: item.location?.city || item.profile?.address || "N/A",
       taskPosted: item.profile?.tasksPostedCount || 0,
       tasksCompleted: item.profile?.tasksCompletedCount || 0,
       disputeCount: item.profile?.tasksDisputedCount || 0,

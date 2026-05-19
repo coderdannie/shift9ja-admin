@@ -11,7 +11,7 @@ export interface User {
   taskPosted?: number;
   tasksCompleted?: number;
   disputeCount: number;
-  status: "verified" | "not_verified" | "suspended" | "pending" | "rejected";
+  status: "verified" | "not_verified" | "suspended" | "pending" | "rejected" | "awaiting_otp";
 }
 
 interface UserTableProps {
@@ -60,10 +60,25 @@ const statusMap = {
     text: "text-rose-700",
     border: "border-rose-200",
   },
+  awaiting_otp: {
+    label: "Awaiting OTP",
+    dot: "bg-purple-500",
+    bg: "bg-purple-50",
+    text: "text-purple-700",
+    border: "border-purple-200",
+  },
 };
 
-const StatusBadge: React.FC<{ status: User["status"] }> = ({ status }) => {
-  const s = statusMap[status];
+const StatusBadge: React.FC<{ status: User["status"] | string }> = ({ status }) => {
+  const normalizedStatus = status?.toLowerCase() as keyof typeof statusMap;
+  const s = statusMap[normalizedStatus] || {
+    label: status || "Unknown",
+    dot: "bg-gray-500",
+    bg: "bg-gray-50",
+    text: "text-gray-700",
+    border: "border-gray-200",
+  };
+
   return (
     <span
       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${s.bg} ${s.text} ${s.border}`}

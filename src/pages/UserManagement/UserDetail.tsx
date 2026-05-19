@@ -17,7 +17,10 @@ import {
   TrendingUp,
   TrendingDown,
   Lock,
-  Wallet2
+  Wallet2,
+  ChevronLeft,
+  ChevronRight,
+  X
 } from 'lucide-react';
 import { PRIVATE_PATHS } from '../../routes/constants';
 import Button from '../../components/common/Button';
@@ -174,6 +177,7 @@ const UserDetail: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSuspending, setIsSuspending] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
 
   const apiData = userData?.data;
 
@@ -184,7 +188,7 @@ const UserDetail: React.FC = () => {
       fullName: `${apiData.firstName} ${apiData.lastName}`,
       email: apiData.email,
       phone: apiData.phoneNumber || 'N/A',
-      city: apiData.profile?.address || 'N/A',
+      city: apiData.location?.city || apiData.profile?.address || 'N/A',
       status: (apiData.isSuspended || apiData.status === 'SUSPENDED') 
         ? 'suspended' 
         : apiData.kycVerification?.status === 'approved' 
@@ -194,6 +198,14 @@ const UserDetail: React.FC = () => {
       roles: apiData.roles || [],
       bio: apiData.profile?.bio || 'No bio available.',
       skills: apiData.profile?.skills || [],
+      experienceLevel: apiData.profile?.experienceLevel || 'N/A',
+      yearsOfExperience: apiData.profile?.yearsOfExperience || 0,
+      galleryUrls: apiData.profile?.galleryUrls || [],
+      hasInsurance: apiData.profile?.hasInsurance || false,
+      hasServiceGuarantee: apiData.profile?.hasServiceGuarantee || false,
+      languagesSpoken: apiData.profile?.languagesSpoken || [],
+      minimumTaskFee: apiData.profile?.minimumTaskFee || 0,
+      offersEmergencyServices: apiData.profile?.offersEmergencyServices || false,
       ratingCount: apiData.profile?.ratingCount || 0,
       wallet: {
         balance: apiData.wallet?.balance || 0,
@@ -251,6 +263,18 @@ const UserDetail: React.FC = () => {
       setIsSuspending(false);
       setIsModalOpen(false);
     }, 1000);
+  };
+
+  const handleNextImage = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (!user || selectedImageIndex === null) return;
+    setSelectedImageIndex((selectedImageIndex + 1) % user.galleryUrls.length);
+  };
+
+  const handlePrevImage = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (!user || selectedImageIndex === null) return;
+    setSelectedImageIndex((selectedImageIndex - 1 + user.galleryUrls.length) % user.galleryUrls.length);
   };
 
   return (
@@ -433,6 +457,20 @@ const UserDetail: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Professional Details */}
+                <div className="flex flex-col mb-12">
+                  <h2 className="text-base font-bold text-[#101828] mb-4 uppercase tracking-wider text-[13px]">Professional Details</h2>
+                  <div className="bg-white rounded-xl border border-[#F2F4F7] px-6">
+                    <InfoItem label="Experience Level" value={user.experienceLevel} />
+                    <InfoItem label="Years of Experience" value={`${user.yearsOfExperience} Year(s)`} />
+                    <InfoItem label="Minimum Task Fee" value={`${user.wallet.currency}${user.minimumTaskFee.toLocaleString()}`} />
+                    <InfoItem label="Languages" value={user.languagesSpoken?.join(', ') || 'N/A'} />
+                    <InfoItem label="Emergency Services" value={user.offersEmergencyServices ? 'Yes' : 'No'} />
+                    <InfoItem label="Insurance" value={user.hasInsurance ? 'Yes' : 'No'} />
+                    <InfoItem label="Service Guarantee" value={user.hasServiceGuarantee ? 'Yes' : 'No'} />
+                  </div>
+                </div>
+
                 {/* Bio Section */}
                 <div className="mb-12">
                   <h2 className="text-base font-bold text-[#101828] mb-4 uppercase tracking-wider text-[13px]">Bio</h2>
@@ -442,16 +480,35 @@ const UserDetail: React.FC = () => {
                 </div>
 
                 {/* Skills Section */}
-                <div className="mb-8 lg:mb-0">
+                <div className="mb-8">
                   <h2 className="text-base font-bold text-[#101828] mb-5 uppercase tracking-wider text-[13px]">Skills</h2>
                   <div className="flex flex-wrap gap-2.5">
-                    {user.skills.map((skill: any) => (
+                    {user.skills?.length > 0 ? user.skills.map((skill: any) => (
                       <span key={skill} className="px-4 py-2 rounded-lg border border-[#EAECF0] bg-[#F9FAFB] text-sm text-[#475467] font-semibold transition-colors hover:border-green-200">
                         {skill}
                       </span>
-                    ))}
+                    )) : <span className="text-sm text-[#98A2B3] italic">No skills listed</span>}
                   </div>
                 </div>
+
+                {/* Gallery Section */}
+                {user.galleryUrls?.length > 0 && (
+                  <div className="mb-8 lg:mb-0">
+                    <h2 className="text-base font-bold text-[#101828] mb-5 uppercase tracking-wider text-[13px]">Portfolio Gallery</h2>
+                    <div className="flex flex-wrap gap-4">
+                      {user.galleryUrls.map((url: string, index: number) => (
+                        <div 
+                          key={index} 
+                          onClick={() => setSelectedImageIndex(index)}
+                          className="w-24 h-24 rounded-lg overflow-hidden border border-[#EAECF0] shadow-sm cursor-pointer group relative"
+                        >
+                          <img src={url} alt={`Portfolio ${index + 1}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Right Column: Top Reviews */}
@@ -490,6 +547,48 @@ const UserDetail: React.FC = () => {
         variant={user.status === 'suspended' ? "info" : "warning"}
         isLoading={isSuspending}
       />
+
+      {/* Lightbox / Gallery Carousel */}
+      {selectedImageIndex !== null && user?.galleryUrls && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-sm" onClick={() => setSelectedImageIndex(null)}>
+          <button 
+            className="absolute top-6 right-6 p-2 text-white/70 hover:text-white bg-black/50 hover:bg-black/80 rounded-full transition-all"
+            onClick={(e) => { e.stopPropagation(); setSelectedImageIndex(null); }}
+          >
+            <X size={24} />
+          </button>
+
+          {user.galleryUrls.length > 1 && (
+            <button 
+              className="absolute left-4 sm:left-8 p-3 text-white/70 hover:text-white bg-black/50 hover:bg-black/80 rounded-full transition-all"
+              onClick={handlePrevImage}
+            >
+              <ChevronLeft size={32} />
+            </button>
+          )}
+
+          <div className="w-full h-full max-w-5xl max-h-[85vh] p-4 flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+            <img 
+              src={user.galleryUrls[selectedImageIndex]} 
+              alt={`Gallery preview ${selectedImageIndex + 1}`}
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+            />
+          </div>
+
+          {user.galleryUrls.length > 1 && (
+            <button 
+              className="absolute right-4 sm:right-8 p-3 text-white/70 hover:text-white bg-black/50 hover:bg-black/80 rounded-full transition-all"
+              onClick={handleNextImage}
+            >
+              <ChevronRight size={32} />
+            </button>
+          )}
+          
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 bg-black/50 rounded-full">
+            <span className="text-white text-sm font-medium">{selectedImageIndex + 1} / {user.galleryUrls.length}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
