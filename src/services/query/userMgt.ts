@@ -1,12 +1,15 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { UseQueryOptions } from '@tanstack/react-query';
 import {
   getUsers,
   getUser,
   getUserStats,
+  updateUser,
+  type UpdateUserBasicInfoPayload,
 } from '../api/userMgt';
 import { QUERY_KEYS } from '../queryKeys';
 import type { ApiResponse, PaginatedData, UserListItem, UserStats, User } from '../../types';
+import { toast } from 'react-hot-toast';
 
 export const useGetUsers = (
   page = 1,
@@ -53,4 +56,18 @@ export const useGetUserStats = (role = '', options?: Partial<UseQueryOptions<Api
   });
 
   return { data, isPending, isError, refetch };
+};
+
+export const useUpdateUser = (uuid: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: UpdateUserBasicInfoPayload) => updateUser(uuid, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_USER_DETAILS, uuid] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_USERS] });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to update user');
+    },
+  });
 };

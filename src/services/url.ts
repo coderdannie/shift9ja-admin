@@ -7,6 +7,8 @@ export const GET_USER_STATS = "admin/users/stats";
 export const GET_USER = (uuid: string) => `admin/users/${uuid}`;
 export const UPDATE_USER_STATUS = (uuid: string) =>
   `admin/users/${uuid}/status`;
+export const UPDATE_USER_BASIC_INFO = (uuid: string) =>
+  `admin/users/${uuid}/basic-info`;
 
 // Task Management
 export const GET_TASKS = "admin/tasks";

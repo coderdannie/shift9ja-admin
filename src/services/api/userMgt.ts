@@ -35,3 +35,23 @@ export const getUser = async (uuid: string): Promise<ApiResponse<User>> => {
   const res = await axiosInstance.get(API.GET_USER(uuid));
   return res.data;
 };
+
+export interface UpdateUserBasicInfoPayload {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phoneNumber?: string;
+  dateOfBirth?: string;
+  avatarUrl?: string;
+  bio?: string;
+  address?: string;
+  isEmailVerified?: boolean;
+}
+
+export const updateUser = async (
+  uuid: string,
+  payload: UpdateUserBasicInfoPayload
+): Promise<ApiResponse<User>> => {
+  const res = await axiosInstance.patch(API.UPDATE_USER_BASIC_INFO(uuid), payload);
+  return res.data;
+};

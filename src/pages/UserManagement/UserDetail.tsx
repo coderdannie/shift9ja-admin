@@ -29,7 +29,7 @@ import ConfirmModal from '../../components/common/ConfirmModal';
 import { Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { toast, Toaster } from 'react-hot-toast';
-import { useGetUser } from '../../services/query/userMgt';
+import { useGetUser, useUpdateUser } from '../../services/query/userMgt';
 
 // Review Card Component
 
@@ -153,10 +153,11 @@ const ReviewCard: React.FC<{ review: any }> = ({ review }) => {
 };
 
 const editSchema = Yup.object({
-  fullName: Yup.string().required('Full name is required'),
+  firstName: Yup.string().required('First name is required'),
+  lastName: Yup.string().required('Last name is required'),
   email: Yup.string().email('Invalid email').required('Email is required'),
   phone: Yup.string().required('Phone is required'),
-  city: Yup.string().required('City is required'),
+  address: Yup.string(),
 });
 
 const statusBadgeStyles = {
@@ -173,6 +174,7 @@ const UserDetail: React.FC = () => {
   const isEdit = window.location.pathname.endsWith('/edit');
 
   const { data: userData, isPending: isLoading, isError } = useGetUser(id || '');
+  const { mutate: updateUser, isPending: isUpdating } = useUpdateUser(id || '');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSuspending, setIsSuspending] = useState(false);
@@ -356,30 +358,46 @@ const UserDetail: React.FC = () => {
             <h2 className="text-xl font-bold text-[#101828] mb-8">Edit User Details</h2>
             <Formik
               initialValues={{
-                fullName: user.fullName,
+                firstName: apiData?.firstName || '',
+                lastName: apiData?.lastName || '',
                 email: user.email,
-                phone: user.phone,
-                city: user.city,
+                phone: user.phone !== 'N/A' ? user.phone : '',
+                address: user.city !== 'N/A' ? user.city : '',
               }}
               validationSchema={editSchema}
+              enableReinitialize
               onSubmit={(values, { setSubmitting }) => {
-                setTimeout(() => {
-                  toast.success('User updated successfully!');
-                  setSubmitting(false);
-                  navigate(`/user-management/${id}`);
-                }, 1000);
+                updateUser(
+                  {
+                    firstName: values.firstName,
+                    lastName: values.lastName,
+                    email: values.email,
+                    phoneNumber: values.phone,
+                    address: values.address,
+                  },
+                  {
+                    onSuccess: () => {
+                      toast.success('User updated successfully!');
+                      navigate(`/user-management/${id}`);
+                    },
+                    onSettled: () => setSubmitting(false),
+                  }
+                );
               }}
             >
               {({ values, errors, touched, handleChange, handleBlur, isValid, dirty, isSubmitting }) => (
                 <Form className="grid grid-cols-1 gap-y-5">
-                  <FormInput label="Full Name" name="fullName" type="text" value={values.fullName} onChange={handleChange} onBlur={handleBlur} error={touched.fullName && errors.fullName} placeholder="Full Name" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <FormInput label="First Name" name="firstName" type="text" value={values.firstName} onChange={handleChange} onBlur={handleBlur} error={touched.firstName && errors.firstName} placeholder="First Name" />
+                    <FormInput label="Last Name" name="lastName" type="text" value={values.lastName} onChange={handleChange} onBlur={handleBlur} error={touched.lastName && errors.lastName} placeholder="Last Name" />
+                  </div>
                   <FormInput label="Email" name="email" type="email" value={values.email} onChange={handleChange} onBlur={handleBlur} error={touched.email && errors.email} placeholder="Email" />
-                  <FormInput label="Phone" name="phone" type="text" value={values.phone} onChange={handleChange} onBlur={handleBlur} error={touched.phone && errors.phone} placeholder="Phone" />
-                  <FormInput label="City" name="city" type="text" value={values.city} onChange={handleChange} onBlur={handleBlur} error={touched.city && errors.city} placeholder="City" />
+                  <FormInput label="Phone Number" name="phone" type="text" value={values.phone} onChange={handleChange} onBlur={handleBlur} error={touched.phone && errors.phone} placeholder="e.g. +2348012345678" />
+                  <FormInput label="Address" name="address" type="text" value={values.address} onChange={handleChange} onBlur={handleBlur} error={touched.address && errors.address} placeholder="Address" />
 
                   <div className="flex flex-col sm:flex-row items-center gap-3 mt-6">
                     <Button label="Cancel" variant="outline" fullWidth={true} className="sm:w-32 py-3 border-[#D0D5DD]" onClick={() => navigate(`/user-management/${id}`)} />
-                    <Button label="Save Changes" isLoading={isSubmitting} disabled={!isValid || !dirty} fullWidth={true} className="py-3 flex-1" />
+                    <Button label="Save Changes" isLoading={isSubmitting || isUpdating} disabled={!isValid || !dirty} fullWidth={true} className="py-3 flex-1" />
                   </div>
                 </Form>
               )}
