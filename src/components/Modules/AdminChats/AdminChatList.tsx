@@ -58,19 +58,19 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
     });
   };
 
-  const getMergedChats = () => {
+  const getMergedChats = (): Chat[] => {
     if (!isAll) {
       return mainChatsData?.data || [];
     }
 
-    const allList = [
+    const allList: Chat[] = [
       ...(mainChatsData?.data || []),
       ...(supportChatsData?.data || []),
       ...(disputeChatsData?.data || []),
     ];
 
     const uniqueMap = new Map<string, Chat>();
-    allList.forEach((chat) => {
+    allList.forEach((chat: Chat) => {
       uniqueMap.set(chat.uuid, chat);
     });
 
@@ -82,7 +82,7 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
   const chatsList = getMergedChats();
 
   const filteredChats =
-    chatsList.filter((chat) => {
+    chatsList.filter((chat: Chat) => {
       const searchLower = searchQuery.toLowerCase();
       const clientName = chat.client
         ? `${chat.client.firstName} ${chat.client.lastName}`.toLowerCase()

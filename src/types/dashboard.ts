@@ -74,6 +74,12 @@ export interface User {
   updatedAt?: string;
   profile?: UserProfile;
   isSuspended?: boolean;
+  location?: {
+    city?: string;
+    state?: string;
+    country?: string;
+    [key: string]: any;
+  };
   wallet?: Wallet;
   recentReviews?: UserReview[];
   kycVerification?: KycVerification;

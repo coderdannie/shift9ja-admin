@@ -10,10 +10,10 @@ import {
 import { QUERY_KEYS } from '../queryKeys';
 
 import type { InfiniteData } from '@tanstack/react-query';
-import type { ChatListParams, ChatMessagesResponse } from '../../types/chat';
+import type { ChatListParams, ChatMessagesResponse, ChatListResponse } from '../../types/chat';
 
 export const useGetAdminChats = (params: ChatListParams = {}, options?: any) => {
-  return useQuery({
+  return useQuery<ChatListResponse, Error>({
     queryKey: [QUERY_KEYS.GET_ADMIN_CHATS, params],
     queryFn: () => getAdminChats(params),
     ...options,
