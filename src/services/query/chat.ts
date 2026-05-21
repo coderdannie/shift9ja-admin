@@ -4,17 +4,19 @@ import {
   getChatMessages, 
   getCloudinarySignature, 
   initiateDisputeChat,
-  markChatAsRead
+  markChatAsRead,
+  claimChat
 } from '../api/chat';
 import { QUERY_KEYS } from '../queryKeys';
 
 import type { InfiniteData } from '@tanstack/react-query';
 import type { ChatListParams, ChatMessagesResponse } from '../../types/chat';
 
-export const useGetAdminChats = (params: ChatListParams = {}) => {
+export const useGetAdminChats = (params: ChatListParams = {}, options?: any) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_ADMIN_CHATS, params],
     queryFn: () => getAdminChats(params),
+    ...options,
   });
 };
 
@@ -55,6 +57,16 @@ export const useMarkChatAsRead = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (uuid: string) => markChatAsRead(uuid),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_ADMIN_CHATS] });
+    },
+  });
+};
+
+export const useClaimChat = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (uuid: string) => claimChat(uuid),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_ADMIN_CHATS] });
     },

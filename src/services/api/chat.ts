@@ -35,3 +35,8 @@ export const markChatAsRead = async (uuid: string): Promise<ApiResponse<any>> =>
   const res = await axiosInstance.post(API.MARK_CHAT_AS_READ(uuid));
   return res.data;
 };
+
+export const claimChat = async (uuid: string): Promise<ApiResponse<any>> => {
+  const res = await axiosInstance.post(API.CLAIM_CHAT(uuid));
+  return res.data;
+};

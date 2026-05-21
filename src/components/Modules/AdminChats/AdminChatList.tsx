@@ -6,6 +6,7 @@ import {
   MessageCircle,
   Search,
   User as UserIcon,
+  UserX,
 } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -27,9 +28,23 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
   >("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { data: chatsData, isLoading } = useGetAdminChats({
-    type: activeTab === "all" ? undefined : activeTab,
+  const isAll = activeTab === "all";
+
+  const { data: mainChatsData, isLoading: isLoadingMain } = useGetAdminChats({
+    type: isAll ? undefined : activeTab,
   });
+
+  const { data: supportChatsData, isLoading: isLoadingSupport } = useGetAdminChats(
+    { type: "support" },
+    { enabled: isAll }
+  );
+
+  const { data: disputeChatsData, isLoading: isLoadingDisputes } = useGetAdminChats(
+    { type: "dispute" },
+    { enabled: isAll }
+  );
+
+  const isLoading = isLoadingMain || (isAll && (isLoadingSupport || isLoadingDisputes));
 
   const { mutate: markAsRead } = useMarkChatAsRead();
 
@@ -37,11 +52,37 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
     if (chat.unreadCount > 0) {
       markAsRead(chat.uuid);
     }
-    navigate(`${PRIVATE_PATHS.ADMIN_CHATS}/${chat.uuid}`);
+    // Pass the full chat object as router state so ChatInterface can use it
+    navigate(`${PRIVATE_PATHS.ADMIN_CHATS}/${chat.uuid}`, {
+      state: { chat },
+    });
   };
 
+  const getMergedChats = () => {
+    if (!isAll) {
+      return mainChatsData?.data || [];
+    }
+
+    const allList = [
+      ...(mainChatsData?.data || []),
+      ...(supportChatsData?.data || []),
+      ...(disputeChatsData?.data || []),
+    ];
+
+    const uniqueMap = new Map<string, Chat>();
+    allList.forEach((chat) => {
+      uniqueMap.set(chat.uuid, chat);
+    });
+
+    return Array.from(uniqueMap.values()).sort(
+      (a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
+    );
+  };
+
+  const chatsList = getMergedChats();
+
   const filteredChats =
-    chatsData?.data?.filter((chat) => {
+    chatsList.filter((chat) => {
       const searchLower = searchQuery.toLowerCase();
       const clientName = chat.client
         ? `${chat.client.firstName} ${chat.client.lastName}`.toLowerCase()
@@ -83,6 +124,10 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
         return type;
     }
   };
+
+  // A chat is "unassigned" when it has no admin and is a claimable type
+  const isUnassigned = (chat: Chat) =>
+    !chat.admin && (chat.type === "support" || chat.type === "dispute");
 
   if (isLoading) {
     return (
@@ -134,73 +179,92 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
       <div className="flex-1 overflow-y-auto no-scrollbar bg-gray-50/30">
         {filteredChats.length > 0 ? (
           <div className="divide-y divide-[#F2F4F7]">
-            {filteredChats.map((chat) => (
-              <div
-                key={chat.uuid}
-                onClick={() => handleChatClick(chat)}
-                className={`
-                  p-4 flex items-center justify-between hover:bg-white cursor-pointer transition-all group border-l-4
-                  ${
-                    activeId === chat.uuid
-                      ? "bg-white border-primary shadow-sm"
-                      : "border-transparent hover:border-gray-200"
-                  }
-                `}
-              >
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <div className="relative shrink-0">
-                    <div className="w-11 h-11 rounded-full bg-primary/5 flex items-center justify-center text-primary font-bold text-base border-2 border-white shadow-sm">
-                      {chat.client?.avatarUrl ? (
-                        <img
-                          src={chat.client.avatarUrl}
-                          alt=""
-                          className="w-full h-full object-cover rounded-full"
-                        />
-                      ) : (
-                        chat.client?.firstName?.[0] || <UserIcon size={18} />
+            {filteredChats.map((chat) => {
+              const unassigned = isUnassigned(chat);
+              return (
+                <div
+                  key={chat.uuid}
+                  onClick={() => handleChatClick(chat)}
+                  className={`
+                    p-4 flex items-center justify-between hover:bg-white cursor-pointer transition-all group border-l-4
+                    ${
+                      activeId === chat.uuid
+                        ? "bg-white border-primary shadow-sm"
+                        : unassigned
+                        ? "border-amber-400 bg-amber-50/40 hover:bg-amber-50/70"
+                        : "border-transparent hover:border-gray-200"
+                    }
+                  `}
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="relative shrink-0">
+                      <div className="w-11 h-11 rounded-full bg-primary/5 flex items-center justify-center text-primary font-bold text-base border-2 border-white shadow-sm">
+                        {chat.client?.avatarUrl ? (
+                          <img
+                            src={chat.client.avatarUrl}
+                            alt=""
+                            className="w-full h-full object-cover rounded-full"
+                          />
+                        ) : (
+                          chat.client?.firstName?.[0] || <UserIcon size={18} />
+                        )}
+                      </div>
+                      {chat.unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+                          {chat.unreadCount}
+                        </span>
                       )}
                     </div>
-                    {chat.unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-white">
-                        {chat.unreadCount}
-                      </span>
-                    )}
-                  </div>
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-0.5">
-                      <h4
-                        className={`text-xs font-bold truncate ${activeId === chat.uuid ? "text-primary" : "text-[#101828]"}`}
-                      >
-                        {chat.client
-                          ? `${chat.client.firstName} ${chat.client.lastName}`
-                          : "System Chat"}
-                      </h4>
-                      <span className="text-[10px] text-[#98A2B3] font-medium whitespace-nowrap">
-                        {format(new Date(chat.lastMessageAt), "HH:mm")}
-                      </span>
-                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-0.5">
+                        <h4
+                          className={`text-xs font-bold truncate ${activeId === chat.uuid ? "text-primary" : "text-[#101828]"}`}
+                        >
+                          {chat.client
+                            ? `${chat.client.firstName} ${chat.client.lastName}`
+                            : "System Chat"}
+                        </h4>
+                        <span className="text-[10px] text-[#98A2B3] font-medium whitespace-nowrap">
+                          {format(new Date(chat.lastMessageAt), "HH:mm")}
+                        </span>
+                      </div>
 
-                    <div className="flex items-center gap-2">
-                      <p
-                        className={`text-[11px] truncate flex-1 ${chat.unreadCount > 0 ? "text-[#101828] font-bold" : "text-gray-500"}`}
-                      >
-                        {chat.lastMessage?.content ||
-                          (chat.dispute?.reason
-                            ? `Re: ${chat.dispute.reason}`
-                            : "Start the conversation...")}
-                      </p>
-                      {activeId === chat.uuid && (
-                        <ChevronRight
-                          size={14}
-                          className="text-primary shrink-0"
-                        />
-                      )}
+                      <div className="flex items-center gap-1.5 mb-1">
+                        {getTypeIcon(chat.type)}
+                        <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
+                          {getTypeLabel(chat.type)}
+                        </span>
+                        {/* Unassigned badge */}
+                        {unassigned && (
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[9px] font-bold uppercase tracking-wide border border-amber-200">
+                            <UserX size={9} />
+                            Unassigned
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <p
+                          className={`text-[11px] truncate flex-1 ${chat.unreadCount > 0 ? "text-[#101828] font-bold" : "text-gray-500"}`}
+                        >
+                          {chat.lastMessage?.content ||
+                            (chat.dispute?.reason
+                              ? `Re: ${chat.dispute.reason}`
+                              : "Start the conversation...")}
+                        </p>
+                        {activeId === chat.uuid && (
+                          <ChevronRight
+                            size={14}
+                            className="text-primary shrink-0"
+                          />
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
@@ -227,7 +291,7 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
         )}
       </div>
 
-      {(chatsData?.meta?.totalPages ?? 0) > 1 && (
+      {(mainChatsData?.meta?.totalPages ?? 0) > 1 && (
         <div className="flex justify-center pt-4">
           <p className="text-xs text-gray-400 font-medium">
             Pagination logic to be expanded...

@@ -84,6 +84,7 @@ export const INITIATE_DISPUTE_CHAT = "admin/chats/initiate-dispute";
 export const GET_CHAT_MESSAGES = (uuid: string) =>
   `admin/chats/${uuid}/messages`;
 export const MARK_CHAT_AS_READ = (uuid: string) => `admin/chats/${uuid}/read`;
+export const CLAIM_CHAT = (uuid: string) => `admin/chats/${uuid}/claim`;
 export const GET_CLOUDINARY_SIGNATURE = "admin/cloudinary/signature";
 
 // Webhooks
