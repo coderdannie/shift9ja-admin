@@ -85,6 +85,36 @@ export interface User {
   kycVerification?: KycVerification;
   tasksPostedCount?: number;
   tasksCompletedCount?: number;
+  taskStats?: {
+    asClient?: {
+      open: number;
+      assigned: number;
+      completed: number;
+      cancelled: number;
+      disputed: number;
+      paid: number;
+      offered: number;
+      rejected: number;
+    };
+    asHelper?: {
+      open: number;
+      assigned: number;
+      completed: number;
+      cancelled: number;
+      disputed: number;
+      paid: number;
+      offered: number;
+      rejected: number;
+    };
+  };
+  metricAverages?: {
+    asHelper?: any;
+    asClient?: {
+      communication: number;
+      cooperation: number;
+      clarity: number;
+    };
+  };
 }
 
 export interface TopUsersData {
