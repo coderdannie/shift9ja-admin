@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { 
   ArrowLeft, 
@@ -20,7 +20,11 @@ import {
   Wallet2,
   ChevronLeft,
   ChevronRight,
-  X
+  X,
+  Briefcase,
+  DollarSign,
+  Send,
+  Ban
 } from 'lucide-react';
 import { PRIVATE_PATHS } from '../../routes/constants';
 import Button from '../../components/common/Button';
@@ -40,19 +44,63 @@ const InfoItem: React.FC<{ label: string; value: React.ReactNode }> = ({ label, 
   </div>
 );
 
-const TaskStatRow: React.FC<{ icon: React.ReactNode; label: string; count: number }> = ({ icon, label, count }) => (
-  <div className="bg-white rounded-xl border border-[#F2F4F7] p-3 flex items-center justify-between shadow-sm min-w-0">
-    <div className="flex items-center gap-2.5 min-w-0">
-      <div className="w-8 h-8 rounded-full bg-[#067647] flex items-center justify-center text-white shrink-0">
-        {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { size: 16 }) : icon}
+const TaskStatRow: React.FC<{ 
+  icon: React.ReactNode; 
+  label: string; 
+  count: number;
+  variant?: 'blue' | 'green' | 'orange' | 'red' | 'purple' | 'gray' | 'amber' | 'indigo';
+}> = ({ icon, label, count, variant = 'green' }) => {
+  const variantStyles = {
+    blue: {
+      iconBg: 'bg-[#0086C9]',
+      badge: 'border-[#B2DDFF] bg-[#EFF8FF] text-[#175CD3]',
+    },
+    green: {
+      iconBg: 'bg-[#067647]',
+      badge: 'border-[#A3E9C9] bg-[#ECFDF3] text-[#067647]',
+    },
+    orange: {
+      iconBg: 'bg-[#E05F1B]',
+      badge: 'border-[#F9DBAF] bg-[#FFF6ED] text-[#C43C00]',
+    },
+    red: {
+      iconBg: 'bg-[#D92D20]',
+      badge: 'border-[#FECDCA] bg-[#FEF3F2] text-[#B42318]',
+    },
+    purple: {
+      iconBg: 'bg-[#7F56D9]',
+      badge: 'border-[#E9D7FE] bg-[#F9F5FF] text-[#6941C6]',
+    },
+    gray: {
+      iconBg: 'bg-[#475467]',
+      badge: 'border-[#D0D5DD] bg-[#F9FAFB] text-[#344054]',
+    },
+    amber: {
+      iconBg: 'bg-[#D9A70E]',
+      badge: 'border-[#FDE293] bg-[#FEFDF0] text-[#B58209]',
+    },
+    indigo: {
+      iconBg: 'bg-[#3538CD]',
+      badge: 'border-[#C7D7FE] bg-[#EEF4FF] text-[#312E81]',
+    }
+  };
+
+  const styles = variantStyles[variant];
+
+  return (
+    <div className="bg-white rounded-xl border border-[#F2F4F7] p-3 flex items-center justify-between shadow-sm min-w-0 hover:shadow-md hover:border-gray-200 transition-all duration-300">
+      <div className="flex items-center gap-2.5 min-w-0">
+        <div className={`w-8 h-8 rounded-full ${styles.iconBg} flex items-center justify-center text-white shrink-0`}>
+          {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { size: 16 }) : icon}
+        </div>
+        <span className="text-[#344054] font-semibold text-xs truncate">{label}</span>
       </div>
-      <span className="text-[#344054] font-semibold text-xs truncate">{label}</span>
+      <div className={`px-2.5 py-0.5 rounded-full border font-bold text-[11px] shrink-0 ${styles.badge}`}>
+        {count}
+      </div>
     </div>
-    <div className="px-2.5 py-0.5 rounded-full border border-[#067647] bg-[#ECFDF3] text-[#067647] font-bold text-[11px] shrink-0">
-      {count}
-    </div>
-  </div>
-);
+  );
+};
 
 const WalletCard: React.FC<{ label: string; value: string; icon: React.ElementType; color: string }> = ({ label, value, icon: Icon, color }) => (
   <div className="flex items-center gap-4 bg-white p-5 rounded-2xl border border-[#F2F4F7] shadow-sm hover:shadow-md transition-shadow min-w-0 flex-1">
@@ -180,8 +228,17 @@ const UserDetail: React.FC = () => {
   const [isSuspending, setIsSuspending] = useState(false);
   const [copied, setCopied] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [activeStatsTab, setActiveStatsTab] = useState<'client' | 'helper'>('client');
 
   const apiData = userData?.data;
+
+  useEffect(() => {
+    if (apiData?.activeRole === 'helper') {
+      setActiveStatsTab('helper');
+    } else if (apiData?.activeRole === 'client') {
+      setActiveStatsTab('client');
+    }
+  }, [apiData?.activeRole]);
 
   const user = useMemo(() => {
     if (!apiData) return null;
@@ -217,17 +274,36 @@ const UserDetail: React.FC = () => {
         escrowBalance: apiData.wallet?.escrowBalance || 0,
       },
       taskStats: {
-        posted: apiData.profile?.tasksPostedCount || 0,
-        completed: apiData.profile?.tasksCompletedCount || 0,
-        inProgress: apiData.profile?.tasksOpenCount || 0,
-        assigned: apiData.profile?.tasksAssignedCount || 0,
-        disputed: apiData.profile?.tasksDisputedCount || 0,
-        cancelled: apiData.profile?.tasksCancelledCount || 0,
+        asClient: {
+          open: apiData.taskStats?.asClient?.open || 0,
+          assigned: apiData.taskStats?.asClient?.assigned || 0,
+          completed: apiData.taskStats?.asClient?.completed || 0,
+          cancelled: apiData.taskStats?.asClient?.cancelled || 0,
+          disputed: apiData.taskStats?.asClient?.disputed || 0,
+          paid: apiData.taskStats?.asClient?.paid || 0,
+          offered: apiData.taskStats?.asClient?.offered || 0,
+          rejected: apiData.taskStats?.asClient?.rejected || 0,
+        },
+        asHelper: {
+          open: apiData.taskStats?.asHelper?.open || 0,
+          assigned: apiData.taskStats?.asHelper?.assigned || 0,
+          completed: apiData.taskStats?.asHelper?.completed || 0,
+          cancelled: apiData.taskStats?.asHelper?.cancelled || 0,
+          disputed: apiData.taskStats?.asHelper?.disputed || 0,
+          paid: apiData.taskStats?.asHelper?.paid || 0,
+          offered: apiData.taskStats?.asHelper?.offered || 0,
+          rejected: apiData.taskStats?.asHelper?.rejected || 0,
+        }
       },
       recentReviews: apiData.recentReviews || [],
       averageRating: apiData.profile?.averageRating || 0,
     };
   }, [apiData]);
+
+  const currentStats = useMemo(() => {
+    if (!user) return { open: 0, assigned: 0, completed: 0, cancelled: 0, disputed: 0, paid: 0, offered: 0, rejected: 0 };
+    return activeStatsTab === 'helper' ? user.taskStats.asHelper : user.taskStats.asClient;
+  }, [user, activeStatsTab]);
 
   if (isLoading) {
     return (
@@ -341,13 +417,46 @@ const UserDetail: React.FC = () => {
               </div>
             </div>
 
-            {/* Task Statistics Bar - Responsive Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-              <TaskStatRow icon={<PlusCircle />} label="Tasks Posted" count={user.taskStats.posted} />
-              <TaskStatRow icon={<CheckCircle2 />} label="Completed" count={user.taskStats.completed} />
-              <TaskStatRow icon={<RefreshCw />} label="In progress" count={user.taskStats.inProgress} />
-              <TaskStatRow icon={<AlertCircle />} label="Disputed" count={user.taskStats.disputed} />
-              <TaskStatRow icon={<XCircle />} label="Cancelled" count={user.taskStats.cancelled} />
+            {/* Task Statistics Bar - Responsive Tabs & Grid */}
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between border-b border-[#F2F4F7] pb-3">
+                <span className="text-xs font-bold text-[#344054] uppercase tracking-wider">Task Statistics</span>
+                {user.roles.length > 1 && (
+                  <div className="flex bg-[#F2F4F7] p-1 rounded-xl border border-[#EAECF0]">
+                    <button
+                      onClick={() => setActiveStatsTab('client')}
+                      className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 ${
+                        activeStatsTab === 'client'
+                          ? 'bg-white text-[#101828] shadow-sm'
+                          : 'text-[#667085] hover:text-[#344054]'
+                      }`}
+                    >
+                      As Client
+                    </button>
+                    <button
+                      onClick={() => setActiveStatsTab('helper')}
+                      className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 ${
+                        activeStatsTab === 'helper'
+                          ? 'bg-white text-[#101828] shadow-sm'
+                          : 'text-[#667085] hover:text-[#344054]'
+                      }`}
+                    >
+                      As Helper
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <TaskStatRow icon={<PlusCircle />} label="Open Tasks" count={currentStats.open} variant="blue" />
+                <TaskStatRow icon={<Briefcase />} label="Assigned" count={currentStats.assigned} variant="indigo" />
+                <TaskStatRow icon={<CheckCircle2 />} label="Completed" count={currentStats.completed} variant="green" />
+                <TaskStatRow icon={<AlertCircle />} label="Disputed" count={currentStats.disputed} variant="amber" />
+                <TaskStatRow icon={<XCircle />} label="Cancelled" count={currentStats.cancelled} variant="red" />
+                <TaskStatRow icon={<DollarSign />} label="Paid Tasks" count={currentStats.paid} variant="green" />
+                <TaskStatRow icon={<Send />} label="Offered" count={currentStats.offered} variant="purple" />
+                <TaskStatRow icon={<Ban />} label="Rejected" count={currentStats.rejected} variant="gray" />
+              </div>
             </div>
           </div>
         </div>

@@ -165,8 +165,6 @@ const CLIENT_HEADERS = [
   "Email",
   "Phone number",
   "City",
-  "Task posted",
-  "Dispute count",
   "KYC status",
   "Actions",
 ];
@@ -176,7 +174,6 @@ const HELPER_HEADERS = [
   "Phone number",
   "City",
   "Tasks completed",
-  "Dispute count",
   "KYC status",
   "Actions",
 ];
@@ -217,12 +214,11 @@ const UserTable: React.FC<UserTableProps> = ({
               {user.phone}
             </td>
             <td className="px-6 py-4 text-[#475467]">{user.city}</td>
-            <td className="px-6 py-4 text-[#475467] text-center">
-              {isClient ? user.taskPosted : user.tasksCompleted}
-            </td>
-            <td className="px-6 py-4 text-[#475467] text-center">
-              {user.disputeCount}
-            </td>
+            {!isClient && (
+              <td className="px-6 py-4 text-[#475467] text-center">
+                {user.tasksCompleted}
+              </td>
+            )}
             <td className="px-6 py-4">
               <StatusBadge status={user.status} />
             </td>
