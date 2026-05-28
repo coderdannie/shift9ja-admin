@@ -1,5 +1,5 @@
-export const BASE_URL = "https://shift9ja-backend.onrender.com/v1/";
-export const SOCKET_URL = "https://shift9ja-backend.onrender.com";
+export const BASE_URL = (import.meta.env.VITE_API_BASE_URL || "https://shift9ja-backend.onrender.com/v1").replace(/\/$/, "") + "/";
+export const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "https://shift9ja-backend.onrender.com";
 
 // Admin User Management
 export const GET_USERS = "admin/users";
