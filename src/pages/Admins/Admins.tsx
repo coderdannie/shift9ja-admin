@@ -32,10 +32,8 @@ const AdminsPage: React.FC = () => {
 
   const admins = useMemo(() => {
     return (adminsData?.data || []).map((admin: AdminUser) => ({
+      ...admin,
       id: admin.uuid,
-      firstName: admin.firstName,
-      lastName: admin.lastName,
-      email: admin.email,
       role:
         admin.roles && admin.roles.length > 0 ? admin.roles[0].name : "No Role",
       status: (admin.isActive ? "active" : "inactive") as "active" | "inactive",
