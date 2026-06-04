@@ -11,12 +11,10 @@ import {
 import CustomTable from "../../common/CustomTable";
 import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
+import type { AdminUser } from "../../../types/admin";
 
-export interface Admin {
+export interface Admin extends AdminUser {
   id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
   role: string;
   status: "active" | "inactive";
   avatar?: string | null;
