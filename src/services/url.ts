@@ -16,6 +16,8 @@ export const GET_TASK_DETAILS = (id: string) => `admin/tasks/${id}`;
 export const GET_TASK_STATS = "admin/tasks/stats";
 export const RESOLVE_DISPUTE = (uuid: string) =>
   `admin/tasks/${uuid}/resolve-dispute`;
+export const GET_SOS_ALERTS = "admin/tasks/sos-alerts";
+export const RESOLVE_SOS_ALERT = (uuid: string) => `admin/tasks/sos-alerts/${uuid}/resolve`;
 
 // Payment & Escrow
 export const GET_PAYMENT_STATS = "admin/payments/stats";
@@ -51,6 +53,9 @@ export const GET_DISPUTE_DETAILS = (uuid: string) => `admin/disputes/${uuid}`;
 export const NOTIFICATION_SETTINGS = "admin/notifications/settings";
 export const BULK_NOTIFICATIONS = "admin/system-messages/publish";
 export const GET_SYSTEM_MESSAGES = "admin/system-messages";
+export const GET_NOTIFICATIONS = "admin/notifications";
+export const MARK_NOTIFICATION_READ = (uuid: string) => `admin/notifications/${uuid}/read`;
+export const MARK_ALL_NOTIFICATIONS_READ = "admin/notifications/read-all";
 
 // Website Inquiries
 export const GET_WAITLIST = "admin/waitlist";

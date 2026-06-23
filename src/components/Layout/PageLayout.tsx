@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import authBg from '../../assets/auth-bg.png';
+import notificationSocketService from '../../services/notificationSocketService';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-hot-toast';
+import { QUERY_KEYS } from '../../services/queryKeys';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -10,6 +14,41 @@ interface LayoutProps {
 export const AuthLayout: React.FC<LayoutProps> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    notificationSocketService.connect();
+
+    const handleNotification = (notification: any) => {
+      console.log('Real-time admin alert:', notification);
+      
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_ADMIN_NOTIFICATIONS] });
+
+      toast((t) => (
+        <div className="flex flex-col gap-1.5 p-0.5">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">🔔</span>
+            <p className="font-bold text-sm text-[#101828] leading-tight">
+              {notification.title}
+            </p>
+          </div>
+          <p className="text-xs text-[#475467] leading-relaxed pl-7">
+            {notification.body}
+          </p>
+        </div>
+      ), {
+        duration: 5000,
+        position: 'top-right',
+      });
+    };
+
+    notificationSocketService.on('admin_notification', handleNotification);
+
+    return () => {
+      notificationSocketService.off('admin_notification', handleNotification);
+      notificationSocketService.disconnect();
+    };
+  }, [queryClient]);
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">

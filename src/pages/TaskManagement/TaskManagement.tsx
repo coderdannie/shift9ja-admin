@@ -16,7 +16,8 @@ const TASKS_PER_PAGE = 10;
 
 const TAB_STATUS_MAP: Record<TaskTabType, TaskStatus | ""> = {
   open: "open",
-  in_progress: "assigned",
+  assigned: "assigned",
+  in_progress: "in_progress",
   completed: "completed",
   disputed: "disputed",
 };

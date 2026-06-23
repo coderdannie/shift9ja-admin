@@ -69,6 +69,10 @@ const WebhookManagement = Loadable(
   lazy(() => import("../pages/WebhookManagement/WebhookManagement")),
 );
 const Analytics = Loadable(lazy(() => import("../pages/Analytics/Analytics")));
+const SOSAlerts = Loadable(lazy(() => import("../pages/SOSAlerts/SOSAlerts")));
+const NotificationsList = Loadable(
+  lazy(() => import("../pages/Notifications/NotificationsList")),
+);
 
 export const PUBLIC_ROUTES = [
   { path: PUBLIC_PATHS.LOGIN, element: <Login /> },
@@ -113,6 +117,8 @@ export const PRIVATE_ROUTES = [
   { path: PRIVATE_PATHS.ADMIN_CHAT_DETAIL, element: <AdminChat />, permission: 'chats.view_chats' },
   { path: PRIVATE_PATHS.SETTINGS, element: <Settings />, permission: 'settings.view_settings' },
   { path: PRIVATE_PATHS.WEBHOOKS, element: <WebhookManagement />, permission: 'webhook_management.view_webhooks' },
+  { path: PRIVATE_PATHS.SOS_ALERTS, element: <SOSAlerts />, permission: 'task_management.view_tasks' },
+  { path: PRIVATE_PATHS.NOTIFICATIONS, element: <NotificationsList />, permission: 'task_management.view_tasks' },
   { path: "/", element: <Navigate to={PRIVATE_PATHS.DASHBOARD} replace /> },
   { path: "*", element: <Navigate to={PRIVATE_PATHS.DASHBOARD} replace /> },
 ];

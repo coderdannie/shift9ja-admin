@@ -16,6 +16,13 @@ const statusConfig: Record<
     border: "border-blue-200",
   },
   assigned: {
+    label: "Assigned",
+    dot: "bg-indigo-500",
+    bg: "bg-indigo-50",
+    text: "text-indigo-700",
+    border: "border-indigo-200",
+  },
+  in_progress: {
     label: "In progress",
     dot: "bg-violet-500",
     bg: "bg-violet-50",

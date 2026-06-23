@@ -16,7 +16,8 @@ import {
   Terminal,
   ChevronLeft,
   ChevronRight,
-  BarChart3
+  BarChart3,
+  ShieldAlert
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { PRIVATE_PATHS } from '../../routes/constants';
@@ -41,6 +42,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed, onToggl
     { label: 'Task Management', icon: Briefcase, path: PRIVATE_PATHS.TASK_MANAGEMENT, permission: 'task_management.view_tasks' },
     { label: 'Admins', icon: Shield, path: PRIVATE_PATHS.ADMINS, permission: 'admin_management.manage_admins' },
     { label: 'Dispute & Reports', icon: AlertCircle, path: PRIVATE_PATHS.DISPUTE_REPORTS, permission: 'dispute_management.view_reports' },
+    { label: 'Safety & SOS', icon: ShieldAlert, path: PRIVATE_PATHS.SOS_ALERTS, permission: 'task_management.view_tasks' },
     { label: 'Admin Chat', icon: MessageSquare, path: PRIVATE_PATHS.ADMIN_CHATS, permission: 'chats.view_chats' },
     { label: 'System Messages', icon: Bell, path: PRIVATE_PATHS.SYSTEM_MESSAGES, permission: 'system_communications.view_messages' },
     { label: 'Webhooks', icon: Terminal, path: PRIVATE_PATHS.WEBHOOKS, permission: 'webhook_management.view_webhooks' },

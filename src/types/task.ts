@@ -1,7 +1,14 @@
-import type { User } from './dashboard.ts';
-import type { Dispute } from './dispute';
+import type { User } from "./dashboard.ts";
+import type { Dispute } from "./dispute";
 
-export type TaskStatus = 'open' | 'assigned' | 'completed' | 'cancelled' | 'disputed' | 'paid';
+export type TaskStatus =
+  | "open"
+  | "assigned"
+  | "in_progress"
+  | "completed"
+  | "cancelled"
+  | "disputed"
+  | "paid";
 
 export interface TaskImage {
   imageUrl: string;
@@ -65,12 +72,28 @@ export interface TaskItem {
 export interface TaskListParams {
   page?: number;
   limit?: number;
-  status?: TaskStatus | '';
+  status?: TaskStatus | "";
   search?: string;
   city?: string;
 }
 
 export interface ResolveDisputePayload {
   resolutionNotes: string;
-  finalStatus: 'completed' | 'cancelled';
+  finalStatus: "completed" | "cancelled";
+}
+
+export interface SOSAlert {
+  uuid: string;
+  taskUuid: string;
+  taskTitle: string;
+  userUuid: string;
+  userName: string;
+  type: string;
+  latitude: number;
+  longitude: number;
+  audioUrl: string | null;
+  status: "active" | "resolved";
+  resolvedByAdminUuid: string | null;
+  resolutionNote: string | null;
+  createdAt: string;
 }
