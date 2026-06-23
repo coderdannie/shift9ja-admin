@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type TaskTabType = 'open' | 'in_progress' | 'completed' | 'disputed';
+export type TaskTabType = 'open' | 'assigned' | 'in_progress' | 'completed' | 'disputed';
 
 interface TaskTabsProps {
   activeTab: TaskTabType;
@@ -9,6 +9,7 @@ interface TaskTabsProps {
 
 const TABS: { key: TaskTabType; label: string }[] = [
   { key: 'open', label: 'Open' },
+  { key: 'assigned', label: 'Assigned' },
   { key: 'in_progress', label: 'In Progress' },
   { key: 'completed', label: 'Completed' },
   { key: 'disputed', label: 'Disputed' },

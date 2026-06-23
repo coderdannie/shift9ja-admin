@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Frontend Integration Guide - Admin Notifications</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-primary: #0a0e17;
+      --bg-secondary: #121824;
+      --bg-tertiary: #1b2336;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --accent-glow: rgba(99, 102, 241, 0.15);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --border-color: #2e3b56;
+      --font-sans: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'Fira Code', monospace;
+      --sidebar-width: 280px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Sidebar Styles */
+    aside {
+      width: var(--sidebar-width);
+      background-color: var(--bg-secondary);
+      border-right: 1px solid var(--border-color);
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 2rem 1.5rem;
+      z-index: 100;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 3rem;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--accent), #a855f7);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: white;
+      font-size: 1.1rem;
+    }
+
+    .logo-text {
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: -0.5px;
+      background: linear-gradient(to right, #ffffff, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .nav-item a {
+      display: block;
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .nav-item a:hover {
+      color: var(--text-primary);
+      background-color: var(--bg-tertiary);
+    }
+
+    .nav-item.active a {
+      color: white;
+      background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+
+    /* Main Content Container */
+    main {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      padding: 3rem 4rem;
+      max-width: 1000px;
+    }
+
+    header {
+      margin-bottom: 3.5rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      background-color: var(--accent-glow);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #818cf8;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: 2.75rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 1rem;
+      background: linear-gradient(to right, #ffffff, #cbd5e1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      font-size: 1.15rem;
+      color: var(--text-secondary);
+      max-width: 700px;
+    }
+
+    /* Sections */
+    section {
+      margin-bottom: 4rem;
+      scroll-margin-top: 2rem;
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    h2::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 1.25rem;
+      background-color: var(--accent);
+      border-radius: 2px;
+    }
+
+    p {
+      color: var(--text-secondary);
+      margin-bottom: 1.25rem;
+      font-size: 1.05rem;
+    }
+
+    /* Lists */
+    ul, ol {
+      color: var(--text-secondary);
+      margin-left: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+    }
+
+    /* Table styles */
+    .table-container {
+      overflow-x: auto;
+      margin: 1.5rem 0;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+
+    th {
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+      font-weight: 600;
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    td {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-secondary);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background-color: var(--bg-secondary);
+      color: #f43f5e;
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      border: 1px solid rgba(244, 63, 94, 0.15);
+    }
+
+    /* Code Blocks */
+    .code-block-wrapper {
+      position: relative;
+      margin: 1.5rem 0;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .code-block-header {
+      background-color: #06090f;
+      padding: 0.75rem 1.25rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .code-block-lang {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .copy-btn {
+      background-color: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      font-family: var(--font-sans);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .copy-btn:hover {
+      background-color: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    .copy-btn.copied {
+      background-color: var(--success);
+      color: white;
+      border-color: var(--success);
+    }
+
+    pre {
+      margin: 0;
+      padding: 1.25rem;
+      background-color: #0b0f19;
+      overflow-x: auto;
+    }
+
+    pre code {
+      background-color: transparent;
+      color: #e2e8f0;
+      border: none;
+      padding: 0;
+      font-size: 0.9rem;
+      display: block;
+      line-height: 1.5;
+    }
+
+    /* Alerts */
+    .alert {
+      display: flex;
+      gap: 1rem;
+      background-color: var(--bg-secondary);
+      border-left: 4px solid var(--accent);
+      border-radius: 0 12px 12px 0;
+      padding: 1.25rem 1.5rem;
+      margin: 2rem 0;
+    }
+
+    .alert.alert-info {
+      border-left-color: var(--accent);
+    }
+
+    .alert.alert-warning {
+      border-left-color: var(--warning);
+      background-color: rgba(245, 158, 11, 0.03);
+    }
+
+    .alert-icon {
+      font-size: 1.25rem;
+      margin-top: 0.1rem;
+    }
+
+    .alert-content p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Colors inside JSON code output */
+    .token-key { color: #f43f5e; }
+    .token-string { color: #10b981; }
+    .token-number { color: #3b82f6; }
+    .token-boolean { color: #f59e0b; }
+    .token-keyword { color: #ec4899; }
+    .token-comment { color: #64748b; }
+
+    /* Footer */
+    footer {
+      margin-top: 6rem;
+      border-top: 1px solid var(--border-color);
+      padding-top: 2rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Responsive */
+    @media (max-width: 850px) {
+      body {
+        flex-direction: column;
+      }
+      aside {
+        width: 100%;
+        height: auto;
+        position: relative;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        padding: 1.5rem;
+      }
+      .logo-container {
+        margin-bottom: 1.5rem;
+      }
+      .nav-list {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+      main {
+        margin-left: 0;
+        padding: 2rem 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <aside>
+    <div class="logo-container">
+      <div class="logo-icon">9</div>
+      <div class="logo-text">Shift9ja Admin</div>
+    </div>
+    <ul class="nav-list">
+      <li class="nav-item active"><a href="#overview">Overview</a></li>
+      <li class="nav-item"><a href="#authentication">Authentication</a></li>
+      <li class="nav-item"><a href="#websocket">WebSockets</a></li>
+      <li class="nav-item"><a href="#rest-api">REST APIs</a></li>
+      <li class="nav-item"><a href="#types">Enums & Types</a></li>
+      <li class="nav-item"><a href="#example">Code Example</a></li>
+    </ul>
+  </aside>
+
+  <main>
+    <header>
+      <span class="badge">Docs & Specs</span>
+      <h1>Frontend Integration Guide</h1>
+      <p class="subtitle">Detailed guide for front-end developers integrating the real-time Administrative Notification system using REST endpoints and Socket.io WebSockets.</p>
+    </header>
+
+    <section id="overview">
+      <h2>1. Architecture Overview</h2>
+      <p>The Admin Notification system ensures that administrators are immediately alerted when critical activities occur across the platform (such as SOS triggers, geofence deviations, support tickets, and disputes). It leverages a dual-layer stack:</p>
+      <ul>
+        <li><strong>REST API Endpoints:</strong> Used to load paginated history tables, manage individual notifications, and mark alerts as read/read-all.</li>
+        <li><strong>WebSockets (Socket.io Gateway):</strong> Delivers low-latency real-time messages directly to open browser sessions, enabling desktop toasts and active badge counters.</li>
+      </ul>
+    </section>
+
+    <section id="authentication">
+      <h2>2. Authentication</h2>
+      <p>All endpoints and WebSocket connections are restricted to authorized administrators. You must pass the <strong>Admin JWT Token</strong> generated during login:</p>
+      
+      <div class="alert alert-info">
+        <div class="alert-icon">🔒</div>
+        <div class="alert-content">
+          <p><strong>REST Requests:</strong> Include the token in the <code>Authorization</code> header using the Bearer scheme:</p>
+          <p><code>Authorization: Bearer &lt;admin_jwt_token&gt;</code></p>
+        </div>
+      </div>
+    </section>
+
+    <section id="websocket">
+      <h2>3. WebSocket Integration</h2>
+      <p>Real-time notifications are broadcasted through a Socket.io gateway under the <code>/notifications</code> namespace.</p>
+
+      <h3>Connection Details</h3>
+      <p>Establish a connection pointing to the notifications namespace. Authentication credentials must be provided as a token within the socket handshake:</p>
+
+      <div class="code-block-wrapper">
+        <div class="code-block-header">
+          <span class="code-block-lang">typescript</span>
+          <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+        </div>
+        <pre><code><span class="token-keyword">import</span> <span class="token-string">{ io }</span> <span class="token-keyword">from</span> <span class="token-string">'socket.io-client'</span><span class="token-comment">;</span>
+
+<span class="token-comment">// Connect to the namespace</span>
+<span class="token-keyword">const</span> socket <span class="token-keyword">=</span> <span class="token-keyword">io</span><span class="token-string">('https://api.shift9ja.com/notifications'</span><span class="token-comment">, {</span>
+  auth: <span class="token-comment">{</span>
+    token: <span class="token-string">'&lt;YOUR_ADMIN_JWT_TOKEN&gt;'</span>
+  <span class="token-comment">},</span>
+  transports: <span class="token-comment">[</span><span class="token-string">'websocket'</span><span class="token-comment">]</span>
+<span class="token-comment">});</span></code></pre>
+      </div>
+
+      <h3>Rooms & Scoping</h3>
+      <p>Upon connection validation, the backend places the admin socket connection into specific groups automatically:</p>
+      <ul>
+        <li><code>admin</code> & <code>admins</code>: For global broadcasts targeting all administrators.</li>
+        <li><code>admin_&lt;admin_id&gt;</code>: For direct alerts aimed exclusively at that specific administrator (e.g. <code>admin_5</code>).</li>
+      </ul>
+
+      <h3>Listening to Events</h3>
+      <p>Register a listener on the <code>admin_notification</code> event. This event triggers whenever a new persistent admin notification is created.</p>
+
+      <div class="code-block-wrapper">
+        <div class="code-block-header">
+          <span class="code-block-lang">JSON (admin_notification Payload Example)</span>
+          <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+        </div>
+        <pre><code>{
+  <span class="token-key">"uuid"</span>: <span class="token-string">"d66a9d70-349f-4318-b2ef-001a1c97a2df"</span>,
+  <span class="token-key">"title"</span>: <span class="token-string">"Critical Location Deviation"</span>,
+  <span class="token-key">"body"</span>: <span class="token-string">"Helper John Doe has moved 150m outside of the geofenced area for Task #128."</span>,
+  <span class="token-key">"type"</span>: <span class="token-string">"DEVIATION_ALERT"</span>,
+  <span class="token-key">"data"</span>: {
+    <span class="token-key">"taskId"</span>: <span class="token-number">128</span>,
+    <span class="token-key">"helperId"</span>: <span class="token-number">14</span>,
+    <span class="token-key">"deviationDistance"</span>: <span class="token-number">150</span>
+  },
+  <span class="token-key">"isRead"</span>: <span class="token-boolean">false</span>,
+  <span class="token-key">"createdAt"</span>: <span class="token-string">"2026-06-23T09:45:10.820Z"</span>
+}</code></pre>
+      </div>
+    </section>
+
+    <section id="rest-api">
+      <h2>4. REST API Reference</h2>
+      <p>Endpoints are versioned under <code>/v1/admin/notifications</code>.</p>
+
+      <h3>A. Fetch Paginated Notifications</h3>
+      <p>Fetches historical admin notifications. Automatically resolves whether the viewing admin has already read each alert.</p>
+      
+      <p><strong>Request:</strong> <code>GET /v1/admin/notifications</code></p>
+      
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Query Param</th>
+              <th>Type</th>
+              <th>Required</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>page</code></td>
+              <td>Number</td>
+              <td>No</td>
+              <td><code>1</code></td>
+              <td>Active pagination page</td>
+            </tr>
+            <tr>
+              <td><code>limit</code></td>
+              <td>Number</td>
+              <td>No</td>
+              <td><code>10</code></td>
+              <td>Items returned per page (Max: 100)</td>
+            </tr>
+            <tr>
+              <td><code>type</code></td>
+              <td>String</td>
+              <td>No</td>
+              <td>-</td>
+              <td>Filters list to specific category (e.g. <code>SOS_ALERT</code>)</td>
+            </tr>
+            <tr>
+              <td><code>isRead</code></td>
+              <td>Boolean</td>
+              <td>No</td>
+              <td>-</td>
+              <td>Filter by read status (<code>true</code> / <code>false</code>)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code-block-wrapper">
+        <div class="code-block-header">
+          <span class="code-block-lang">Response (200 OK)</span>
+          <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+        </div>
+        <pre><code>{
+  <span class="token-key">"success"</span>: <span class="token-boolean">true</span>,
+  <span class="token-key">"message"</span>: <span class="token-string">"Admin notifications retrieved successfully"</span>,
+  <span class="token-key">"data"</span>: {
+    <span class="token-key">"items"</span>: [
+      {
+        <span class="token-key">"uuid"</span>: <span class="token-string">"d66a9d70-349f-4318-b2ef-001a1c97a2df"</span>,
+        <span class="token-key">"title"</span>: <span class="token-string">"Critical Location Deviation"</span>,
+        <span class="token-key">"body"</span>: <span class="token-string">"Helper John Doe has moved 150m..."</span>,
+        <span class="token-key">"type"</span>: <span class="token-string">"DEVIATION_ALERT"</span>,
+        <span class="token-key">"data"</span>: { <span class="token-key">"taskId"</span>: <span class="token-number">128</span> },
+        <span class="token-key">"createdAt"</span>: <span class="token-string">"2026-06-23T09:45:10.820Z"</span>,
+        <span class="token-key">"isRead"</span>: <span class="token-boolean">false</span>
+      }
+    ],
+    <span class="token-key">"meta"</span>: {
+      <span class="token-key">"totalItems"</span>: <span class="token-number">1</span>,
+      <span class="token-key">"itemCount"</span>: <span class="token-number">1</span>,
+      <span class="token-key">"itemsPerPage"</span>: <span class="token-number">10</span>,
+      <span class="token-key">"totalPages"</span>: <span class="token-number">1</span>,
+      <span class="token-key">"currentPage"</span>: <span class="token-number">1</span>
+    }
+  }
+}</code></pre>
+      </div>
+
+      <h3>B. Mark Specific Notification as Read</h3>
+      <p>Flags a single notification as read by the viewing administrator.</p>
+      <p><strong>Request:</strong> <code>PATCH /v1/admin/notifications/:uuid/read</code></p>
+      <p><strong>URL Parameter:</strong> <code>uuid</code> (The notification's string identifier)</p>
+      
+      <div class="code-block-wrapper">
+        <div class="code-block-header">
+          <span class="code-block-lang">Response (200 OK)</span>
+          <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+        </div>
+        <pre><code>{
+  <span class="token-key">"success"</span>: <span class="token-boolean">true</span>,
+  <span class="token-key">"message"</span>: <span class="token-string">"Admin notification marked as read successfully"</span>,
+  <span class="token-key">"data"</span>: <span class="token-boolean">null</span>
+}</code></pre>
+      </div>
+
+      <h3>C. Mark All Notifications as Read</h3>
+      <p>Marks all unread notifications visible to the logged-in administrator as read.</p>
+      <p><strong>Request:</strong> <code>PATCH /v1/admin/notifications/read-all</code></p>
+      
+      <div class="code-block-wrapper">
+        <div class="code-block-header">
+          <span class="code-block-lang">Response (200 OK)</span>
+          <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+        </div>
+        <pre><code>{
+  <span class="token-key">"success"</span>: <span class="token-boolean">true</span>,
+  <span class="token-key">"message"</span>: <span class="token-string">"All admin notifications marked as read successfully"</span>,
+  <span class="token-key">"data"</span>: <span class="token-boolean">null</span>
+}</code></pre>
+      </div>
+    </section>
+
+    <section id="types">
+      <h2>5. Reference Enums & TypeScript Interfaces</h2>
+      <p>Include these definitions inside your project model schemas:</p>
+
+      <div class="code-block-wrapper">
+        <div class="code-block-header">
+          <span class="code-block-lang">typescript</span>
+          <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+        </div>
+        <pre><code><span class="token-keyword">export enum</span> AdminNotificationType {
+  SOS_ALERT = <span class="token-string">'SOS_ALERT'</span>,
+  DEVIATION_ALERT = <span class="token-string">'DEVIATION_ALERT'</span>,
+  NEW_DISPUTE = <span class="token-string">'NEW_DISPUTE'</span>,
+  NEW_SUPPORT_CHAT = <span class="token-string">'NEW_SUPPORT_CHAT'</span>,
+  SYSTEM_ALERT = <span class="token-string">'SYSTEM_ALERT'</span>,
+  LARGE_TRANSACTION = <span class="token-string">'LARGE_TRANSACTION'</span>,
+}
+
+<span class="token-keyword">export interface</span> AdminNotification {
+  uuid: <span class="token-keyword">string</span>;
+  title: <span class="token-keyword">string</span>;
+  body: <span class="token-keyword">string</span>;
+  type: AdminNotificationType;
+  data?: <span class="token-keyword">Record</span>&lt;<span class="token-keyword">string</span>, <span class="token-keyword">any</span>&gt;;
+  isRead: <span class="token-keyword">boolean</span>;
+  createdAt: <span class="token-keyword">string</span>;
+}
+
+<span class="token-keyword">export interface</span> PaginatedResponse&lt;T&gt; {
+  success: <span class="token-keyword">boolean</span>;
+  message: <span class="token-keyword">string</span>;
+  data: {
+    items: T[];
+    meta: {
+      totalItems: <span class="token-keyword">number</span>;
+      itemCount: <span class="token-keyword">number</span>;
+      itemsPerPage: <span class="token-keyword">number</span>;
+      totalPages: <span class="token-keyword">number</span>;
+      currentPage: <span class="token-keyword">number</span>;
+    };
+  };
+}</code></pre>
+      </div>
+    </section>
+
+    <section id="example">
+      <h2>6. React Integration Example</h2>
+      <p>Here is a basic custom React Hook utilizing <code>socket.io-client</code> to connect and listen to live admin-bound alerts:</p>
+
+      <div class="code-block-wrapper">
+        <div class="code-block-header">
+          <span class="code-block-lang">typescript (useAdminNotifications.ts)</span>
+          <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+        </div>
+        <pre><code><span class="token-keyword">import</span> <span class="token-string">{ useEffect, useState }</span> <span class="token-keyword">from</span> <span class="token-string">'react'</span><span class="token-comment">;</span>
+<span class="token-keyword">import</span> <span class="token-string">{ io, Socket }</span> <span class="token-keyword">from</span> <span class="token-string">'socket.io-client'</span><span class="token-comment">;</span>
+<span class="token-keyword">import</span> <span class="token-string">{ AdminNotification }</span> <span class="token-keyword">from</span> <span class="token-string">'./types'</span><span class="token-comment">;</span>
+
+<span class="token-keyword">export function</span> useAdminNotifications(token: <span class="token-keyword">string</span>, backendUrl: <span class="token-keyword">string</span>) {
+  <span class="token-keyword">const</span> [socket, setSocket] = useState&lt;Socket | null&gt;(null);
+  const [liveAlerts, setLiveAlerts] = useState&lt;AdminNotification[]&gt;([]);
+
+  useEffect(() => {
+    if (!token) return;
+
+    // Connect pointing to the /notifications namespace
+    const socketInstance = io(`${backendUrl}/notifications`, {
+      auth: { token },
+      transports: ['websocket'],
+    });
+
+    socketInstance.on('connect', () => {
+      console.log('Connected to admin notifications gateway');
+    });
+
+    // Listen for live admin alerts
+    socketInstance.on('admin_notification', (notification: AdminNotification) => {
+      setLiveAlerts((prev) => [notification, ...prev]);
+      
+      // Hook toast alerts or window chime notifications here
+      console.log('Real-time admin alert:', notification.title);
+    });
+
+    socketInstance.on('disconnect', () => {
+      console.log('Disconnected from notifications gateway');
+    });
+
+    setSocket(socketInstance);
+
+    return () => {
+      socketInstance.disconnect();
+    };
+  }, [token, backendUrl]);
+
+  return { socket, liveAlerts, setLiveAlerts };
+}</code></pre>
+      </div>
+    </section>
+
+    <footer>
+      <span>Shift9ja Backend Team &copy; 2026</span>
+      <span>V1.0.0</span>
+    </footer>
+  </main>
+
+  <script>
+    function copySnippet(button) {
+      const codeElement = button.closest('.code-block-wrapper').querySelector('pre code');
+      const textToCopy = codeElement.innerText;
+      
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        button.innerText = 'Copied!';
+        button.classList.add('copied');
+        
+        setTimeout(() => {
+          button.innerText = 'Copy';
+          button.classList.remove('copied');
+        }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy text: ', err);
+      });
+    }
+
+    // Scroll Spy active navigation highlight
+    window.addEventListener('DOMContentLoaded', () => {
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          const id = entry.target.getAttribute('id');
+          const navLink = document.querySelector(`aside .nav-item a[href="#${id}"]`);
+          
+          if (entry.intersectionRatio > 0) {
+            document.querySelectorAll('aside .nav-item').forEach(item => item.classList.remove('active'));
+            navLink.parentElement.classList.add('active');
+          }
+        });
+      }, { rootMargin: '0px 0px -60% 0px' });
+
+      document.querySelectorAll('section[id]').forEach(section => {
+        observer.observe(section);
+      });
+    });
+  </script>
+</body>
+</html>

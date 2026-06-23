@@ -86,6 +86,71 @@ const WebsiteInquiries = () => {
     );
   }, [search, waitlistEntries]);
 
+  const handleExport = () => {
+    if (activeTab === "waitlist") {
+      const headers = [
+        "CONTACT ID",
+        "EMAIL",
+        "FIRSTNAME",
+        "LASTNAME",
+        "SMS",
+        "LANDLINE_NUMBER",
+        "WHATSAPP",
+        "INTERESTS"
+      ];
+      
+      const rows = filteredWaitlist.map((entry) => [
+        "", // CONTACT ID
+        entry.email, // EMAIL
+        "", // FIRSTNAME
+        "", // LASTNAME
+        "", // SMS
+        "", // LANDLINE_NUMBER
+        "", // WHATSAPP
+        "[]" // INTERESTS
+      ]);
+
+      const csvContent = [
+        headers.map(h => `"${h}"`).join(","),
+        ...rows.map(row => row.map(val => `"${val.replace(/"/g, '""')}"`).join(","))
+      ].join("\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `waitlist_export_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      const headers = ["Name", "Email", "Message", "Date", "Status"];
+      const rows = filteredContacts.map((c) => [
+        c.name,
+        c.email,
+        c.message,
+        c.date,
+        c.status
+      ]);
+      
+      const csvContent = [
+        headers.map(h => `"${h}"`).join(","),
+        ...rows.map(row => row.map(val => `"${val.replace(/"/g, '""')}"`).join(","))
+      ].join("\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `contacts_export_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -110,6 +175,7 @@ const WebsiteInquiries = () => {
             variant="primary"
             fullWidth={false}
             className="h-10! px-6"
+            onClick={handleExport}
             icon={<Download size={18} />}
           />
         </div>

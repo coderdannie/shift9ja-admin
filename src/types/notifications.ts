@@ -59,3 +59,40 @@ export interface NotificationSettingsResponse {
   message: string;
   data: NotificationSettings;
 }
+
+export type AdminNotificationType =
+  | 'SOS_ALERT'
+  | 'DEVIATION_ALERT'
+  | 'NEW_DISPUTE'
+  | 'NEW_SUPPORT_CHAT'
+  | 'SYSTEM_ALERT'
+  | 'LARGE_TRANSACTION';
+
+export interface AdminNotification {
+  uuid: string;
+  title: string;
+  body: string;
+  type: string;
+  data?: Record<string, any>;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface AdminNotificationPaginatedResponse {
+  success: boolean;
+  message: string;
+  data: {
+    data: AdminNotification[];
+    meta: {
+      page: number;
+      limit: number;
+      totalItems: number;
+      totalPages: number;
+      itemCount: number;
+      hasPreviousPage: boolean;
+      hasNextPage: boolean;
+    };
+  };
+}
+
+
