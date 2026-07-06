@@ -57,6 +57,10 @@ export const GET_NOTIFICATIONS = "admin/notifications";
 export const MARK_NOTIFICATION_READ = (uuid: string) => `admin/notifications/${uuid}/read`;
 export const MARK_ALL_NOTIFICATIONS_READ = "admin/notifications/read-all";
 
+// FCM Web Push
+export const REGISTER_FCM_TOKEN = "admin/notifications/fcm/register";
+export const UNREGISTER_FCM_TOKEN = "admin/notifications/fcm/unregister";
+
 // Website Inquiries
 export const GET_WAITLIST = "admin/waitlist";
 

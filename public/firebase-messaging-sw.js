@@ -10,11 +10,12 @@ importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-comp
 // NOTE: These values are intentionally public-facing (they go in the browser).
 // Replace each placeholder with your actual Firebase project values.
 firebase.initializeApp({
-  apiKey: "REPLACE_WITH_VITE_FIREBASE_API_KEY",
-  authDomain: "REPLACE_WITH_VITE_FIREBASE_AUTH_DOMAIN",
-  projectId: "REPLACE_WITH_VITE_FIREBASE_PROJECT_ID",
-  messagingSenderId: "REPLACE_WITH_VITE_FIREBASE_MESSAGING_SENDER_ID",
-  appId: "REPLACE_WITH_VITE_FIREBASE_APP_ID",
+  apiKey: "AIzaSyBJmCb_usgBoJJ9qCDrReBLxLXo9Bh42o0",
+  authDomain: "shift9ja-f8547.firebaseapp.com",
+  projectId: "shift9ja-f8547",
+  storageBucket: "shift9ja-f8547.firebasestorage.app",
+  messagingSenderId: "538898015026",
+  appId: "1:538898015026:web:73ff5dba8ed29c4a55ad2b",
 });
 
 const messaging = firebase.messaging();

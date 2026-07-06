@@ -11,6 +11,8 @@ import {
 } from '../../../services/query/chat';
 import type { Chat, ChatMessage } from '../../../types/chat';
 import { format } from 'date-fns';
+import { useQueryClient } from '@tanstack/react-query';
+import { QUERY_KEYS } from '../../../services/queryKeys';
 
 interface ChatInterfaceProps {
   conversationUuid: string;
@@ -22,6 +24,7 @@ interface ChatInterfaceProps {
 const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationUuid, title = 'Chat Session', onBack, chat }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
   
   // Try to read chat from location state
   const routedChat = (location.state as any)?.chat as Chat | undefined;
@@ -30,7 +33,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationUuid, title =
   const { data: chatsData } = useGetAdminChats();
   const cachedChat = chatsData?.data?.find(c => c.uuid === conversationUuid);
   
-  const activeChat = chat ?? routedChat ?? cachedChat;
+  // Prioritize cachedChat (which is live/fetched from the query) over static state snapshots
+  const activeChat = cachedChat ?? chat ?? routedChat;
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
@@ -124,6 +128,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationUuid, title =
         return [...prev, msg];
       });
       setTimeout(scrollToBottom, 50);
+      
+      // Smoothly update the sidebar list by invalidating the query
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_ADMIN_CHATS] });
     };
 
     const handleTyping = ({ conversationUuid: msgUuid, isTyping: typing }: any) => {
