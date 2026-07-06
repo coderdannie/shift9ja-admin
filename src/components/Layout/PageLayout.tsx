@@ -6,6 +6,7 @@ import notificationSocketService from '../../services/notificationSocketService'
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { QUERY_KEYS } from '../../services/queryKeys';
+import { useAdminPushNotifications } from '../../hooks/useAdminPushNotifications';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -16,6 +17,11 @@ export const AuthLayout: React.FC<LayoutProps> = ({ children }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const queryClient = useQueryClient();
 
+  // ── FCM Web Push: active for the full authenticated session ─────────────────
+  // AuthLayout is only mounted when sessionStorage has a valid user token,
+  // so isAuthenticated=true is safe. Token cleanup happens on unmount (logout).
+  useAdminPushNotifications(true);
+
   useEffect(() => {
     notificationSocketService.connect();
 
@@ -23,6 +29,7 @@ export const AuthLayout: React.FC<LayoutProps> = ({ children }) => {
       console.log('Real-time admin alert:', notification);
       
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_ADMIN_NOTIFICATIONS] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_ADMIN_CHATS] });
 
       toast((t) => (
         <div className="flex flex-col gap-1.5 p-0.5">

@@ -5,7 +5,9 @@ import {
   GET_SYSTEM_MESSAGES,
   GET_NOTIFICATIONS,
   MARK_NOTIFICATION_READ,
-  MARK_ALL_NOTIFICATIONS_READ
+  MARK_ALL_NOTIFICATIONS_READ,
+  REGISTER_FCM_TOKEN,
+  UNREGISTER_FCM_TOKEN,
 } from "../url";
 import type { 
   NotificationSettingsResponse, 
@@ -53,5 +55,25 @@ export const markNotificationAsRead = async (uuid: string): Promise<ApiResponse<
 
 export const markAllNotificationsAsRead = async (): Promise<ApiResponse<null>> => {
   const response = await axiosInstance.patch(MARK_ALL_NOTIFICATIONS_READ);
+  return response.data;
+};
+
+// ─── FCM Web Push Token Registration ───────────────────────────────────────────
+
+export interface FcmTokenPayload {
+  token: string;
+  platform?: 'web';
+  deviceId?: string;
+}
+
+export const registerFcmToken = async (payload: FcmTokenPayload): Promise<{ message: string; data: null }> => {
+  const response = await axiosInstance.post(REGISTER_FCM_TOKEN, payload);
+  return response.data;
+};
+
+export const unregisterFcmToken = async (token: string): Promise<{ message: string; data: null }> => {
+  const response = await axiosInstance.delete(UNREGISTER_FCM_TOKEN, {
+    data: { token },
+  });
   return response.data;
 };
