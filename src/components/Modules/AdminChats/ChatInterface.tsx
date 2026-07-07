@@ -252,7 +252,20 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationUuid, title =
             {typeIcon}
           </div>
           <div>
-            <h3 className="text-sm font-bold text-[#101828]">{chatTitle}</h3>
+            <h3
+              onClick={() => {
+                if (activeChat?.client?.uuid) {
+                  navigate(`/user-management/${activeChat.client.uuid}`);
+                }
+              }}
+              className={`text-sm font-bold text-[#101828] ${
+                activeChat?.client?.uuid
+                  ? 'cursor-pointer hover:underline hover:text-primary transition-colors'
+                  : ''
+              }`}
+            >
+              {chatTitle}
+            </h3>
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
               <p className="text-[10px] text-green-600 font-bold uppercase tracking-wider">{subtitle}</p>
@@ -304,7 +317,20 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationUuid, title =
             <div key={msg.uuid || msg.tempId} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-[80%] flex flex-col gap-1 ${isMe ? 'items-end' : 'items-start'}`}>
                 {!isMe && (
-                  <span className="text-[10px] text-gray-500 font-bold ml-1">{senderName}</span>
+                  <span
+                    onClick={() => {
+                      if (msg.sender?.uuid) {
+                        navigate(`/user-management/${msg.sender.uuid}`);
+                      }
+                    }}
+                    className={`text-[10px] text-gray-500 font-bold ml-1 ${
+                      msg.sender?.uuid
+                        ? 'cursor-pointer hover:underline hover:text-primary transition-colors'
+                        : ''
+                    }`}
+                  >
+                    {senderName}
+                  </span>
                 )}
                 <div
                   className={`p-3 rounded-2xl text-[13px] shadow-sm relative ${
