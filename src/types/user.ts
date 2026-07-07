@@ -14,5 +14,9 @@ export interface UserStats {
   activeUsers: number;
   inactiveUsers: number;
   suspendedUsers: number;
+  verifiedHelpers?: number;
+  verifiedClients?: number;
+  totalVerifiedUsers?: number;
+  flaggedAccounts?: number;
   [key: string]: any;
 }
