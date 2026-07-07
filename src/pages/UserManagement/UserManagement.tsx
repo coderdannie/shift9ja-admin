@@ -59,8 +59,8 @@ const UserManagement = () => {
         icon: Users,
       },
       {
-        title: "Verified Helpers",
-        value: s?.verifiedHelpers?.toLocaleString() || "0",
+        title: "Verified Users",
+        value: s?.totalVerifiedUsers?.toLocaleString() || "0",
         icon: UserCheck,
       },
       {
