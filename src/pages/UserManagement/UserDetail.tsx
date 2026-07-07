@@ -33,7 +33,12 @@ import ConfirmModal from "../../components/common/ConfirmModal";
 import { Form, Formik } from "formik";
 import * as Yup from "yup";
 import { toast, Toaster } from "react-hot-toast";
-import { useGetUser, useUpdateUser } from "../../services/query/userMgt";
+import {
+  useGetUser,
+  useUpdateUser,
+  useUpdateUserKycStatus,
+} from "../../services/query/userMgt";
+import { Dialog, Transition } from "@headlessui/react";
 
 // Review Card Component
 
@@ -277,6 +282,8 @@ const UserDetail: React.FC = () => {
     isError,
   } = useGetUser(id || "");
   const { mutate: updateUser, isPending: isUpdating } = useUpdateUser(id || "");
+  const { mutate: updateKycStatus, isPending: isUpdatingKyc } =
+    useUpdateUserKycStatus(id || "");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSuspending, setIsSuspending] = useState(false);
@@ -287,6 +294,49 @@ const UserDetail: React.FC = () => {
   const [activeStatsTab, setActiveStatsTab] = useState<"client" | "helper">(
     "client",
   );
+
+  const [isApproveOpen, setIsApproveOpen] = useState(false);
+  const [isRejectOpen, setIsRejectOpen] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
+
+  const adminUserJson = sessionStorage.getItem("user");
+  const loggedInAdmin = adminUserJson ? JSON.parse(adminUserJson) : null;
+
+  // Add this debug log so you can inspect your exact admin role format in Chrome DevTools Console:
+  useEffect(() => {
+    console.log("🔒 Logged-in admin roles:", loggedInAdmin?.roles);
+  }, [loggedInAdmin]);
+
+  const isKycReviewer =
+    loggedInAdmin?.roles?.some((role: any) => {
+      // Normalize 'Super Admin', 'SUPER_ADMIN', 'super admin' all to 'SUPERADMIN'
+      const normalized = (role.name || "").replace(/[\s_-]/g, "").toUpperCase();
+      return normalized === "SUPERADMIN" || normalized === "MANAGER";
+    }) || false;
+
+  const handleApprove = () => {
+    updateKycStatus(
+      { status: "verified" },
+      {
+        onSuccess: () => {
+          setIsApproveOpen(false);
+        },
+      },
+    );
+  };
+
+  const handleReject = () => {
+    if (!rejectionReason.trim()) return;
+    updateKycStatus(
+      { status: "rejected", reason: rejectionReason.trim() },
+      {
+        onSuccess: () => {
+          setIsRejectOpen(false);
+          setRejectionReason("");
+        },
+      },
+    );
+  };
 
   const apiData = userData?.data;
 
@@ -814,20 +864,41 @@ const UserDetail: React.FC = () => {
                     KYC Verification Details
                   </h2>
                 </div>
-                {user.kycVerification && (
-                  <span
-                    className={`px-3 py-1 rounded-full border text-xs font-bold capitalize ${
-                      user.kycVerification.status === "verified" ||
-                      user.kycVerification.status === "approved"
-                        ? "border-green-200 bg-green-50 text-green-700"
-                        : user.kycVerification.status === "rejected"
-                          ? "border-rose-200 bg-rose-50 text-rose-700"
-                          : "border-blue-200 bg-blue-50 text-blue-700"
-                    }`}
-                  >
-                    {user.kycVerification.status}
-                  </span>
-                )}
+                <div className="flex items-center gap-3">
+                  {user.kycVerification && (
+                    <span
+                      className={`px-3 py-1 rounded-full border text-xs font-bold capitalize ${
+                        user.kycVerification.status === "verified" ||
+                        user.kycVerification.status === "approved"
+                          ? "border-green-200 bg-green-50 text-green-700"
+                          : user.kycVerification.status === "rejected"
+                            ? "border-rose-200 bg-rose-50 text-rose-700"
+                            : "border-blue-200 bg-blue-50 text-blue-700"
+                      }`}
+                    >
+                      {user.kycVerification.status}
+                    </span>
+                  )}
+                  {isKycReviewer &&
+                    user.kycVerification &&
+                    user.kycVerification.status !== "verified" &&
+                    user.kycVerification.status !== "approved" && (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          label="Approve"
+                          variant="primary"
+                          onClick={() => setIsApproveOpen(true)}
+                          className="!py-1.5 !px-4 text-xs font-bold shadow-sm"
+                        />
+                        <Button
+                          label="Reject"
+                          variant="danger"
+                          onClick={() => setIsRejectOpen(true)}
+                          className="!py-1.5 !px-4 text-xs font-bold shadow-sm"
+                        />
+                      </div>
+                    )}
+                </div>
               </div>
 
               {!user.kycVerification ? (
@@ -1169,6 +1240,110 @@ const UserDetail: React.FC = () => {
         variant={user.status === "suspended" ? "info" : "warning"}
         isLoading={isSuspending}
       />
+
+      {/* KYC Manual Review: Approve Confirmation Modal */}
+      {user && (
+        <ConfirmModal
+          isOpen={isApproveOpen}
+          onClose={() => setIsApproveOpen(false)}
+          onConfirm={handleApprove}
+          title="Approve User KYC"
+          description={`Are you sure you want to manually approve KYC verification for ${user.fullName}? This will automatically change their overall account status to ACTIVE.`}
+          confirmLabel={isUpdatingKyc ? "Approving..." : "Approve KYC"}
+          variant="info"
+          isLoading={isUpdatingKyc}
+        />
+      )}
+
+      {/* KYC Manual Review: Rejection Reason Modal */}
+      {user && (
+        <Transition.Root show={isRejectOpen} as={React.Fragment}>
+          <Dialog
+            as="div"
+            className="relative z-50"
+            onClose={() => setIsRejectOpen(false)}
+          >
+            <Transition.Child
+              as={React.Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              <div className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity" />
+            </Transition.Child>
+
+            <div className="fixed inset-0 z-10 overflow-y-auto">
+              <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+                <Transition.Child
+                  as={React.Fragment}
+                  enter="ease-out duration-300"
+                  enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                  enterTo="opacity-100 translate-y-0 sm:scale-100"
+                  leave="ease-in duration-200"
+                  leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+                  leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                >
+                  <Dialog.Panel className="relative transform overflow-hidden rounded-2xl bg-white p-8 text-left shadow-xl transition-all w-full max-w-md">
+                    <button
+                      onClick={() => setIsRejectOpen(false)}
+                      className="absolute top-4 right-4 p-1.5 rounded-lg text-[#98A2B3] hover:bg-gray-100 transition-colors"
+                      aria-label="Close"
+                    >
+                      <X size={18} />
+                    </button>
+
+                    <div className="w-14 h-14 rounded-full bg-rose-50 flex items-center justify-center mb-5 text-rose-600">
+                      <XCircle size={26} />
+                    </div>
+
+                    <Dialog.Title
+                      as="h2"
+                      className="text-[20px] font-bold text-[#101828] mb-2 font-inter"
+                    >
+                      Reject User KYC
+                    </Dialog.Title>
+
+                    <div className="mt-2">
+                      <p className="text-[#475467] text-sm leading-relaxed mb-4 font-inter">
+                        Please enter a clear, descriptive reason for rejecting
+                        the KYC submission for {user.fullName}. This reason will
+                        be sent as a push notification to the user.
+                      </p>
+                      <textarea
+                        rows={4}
+                        value={rejectionReason}
+                        onChange={(e) => setRejectionReason(e.target.value)}
+                        placeholder="e.g. The uploaded ID document is blurry and unreadable. Please upload a clear photo of your government-issued ID."
+                        className="w-full px-3 py-2.5 border border-[#D0D5DD] rounded-xl text-sm focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 outline-none transition-all resize-none font-inter text-[#101828]"
+                      />
+                    </div>
+
+                    <div className="mt-8 flex gap-3">
+                      <Button
+                        label="Cancel"
+                        variant="outline"
+                        className="flex-1 !h-11 border-[#D0D5DD] font-semibold"
+                        onClick={() => setIsRejectOpen(false)}
+                        disabled={isUpdatingKyc}
+                      />
+                      <Button
+                        label={isUpdatingKyc ? "Rejecting..." : "Reject KYC"}
+                        variant="danger"
+                        className="flex-1 !h-11 font-semibold"
+                        onClick={handleReject}
+                        disabled={!rejectionReason.trim() || isUpdatingKyc}
+                      />
+                    </div>
+                  </Dialog.Panel>
+                </Transition.Child>
+              </div>
+            </div>
+          </Dialog>
+        </Transition.Root>
+      )}
 
       {/* Lightbox / Gallery Carousel */}
       {selectedImageIndex !== null && user?.galleryUrls && (
