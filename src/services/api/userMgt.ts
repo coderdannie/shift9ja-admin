@@ -55,3 +55,16 @@ export const updateUser = async (
   const res = await axiosInstance.patch(API.UPDATE_USER_BASIC_INFO(uuid), payload);
   return res.data;
 };
+
+export interface UpdateKycStatusPayload {
+  status: 'verified' | 'rejected';
+  reason?: string;
+}
+
+export const updateUserKycStatus = async (
+  uuid: string,
+  payload: UpdateKycStatusPayload
+): Promise<ApiResponse<any>> => {
+  const res = await axiosInstance.patch(API.UPDATE_USER_KYC_STATUS(uuid), payload);
+  return res.data;
+};

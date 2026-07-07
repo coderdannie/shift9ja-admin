@@ -9,6 +9,8 @@ export const UPDATE_USER_STATUS = (uuid: string) =>
   `admin/users/${uuid}/status`;
 export const UPDATE_USER_BASIC_INFO = (uuid: string) =>
   `admin/users/${uuid}/basic-info`;
+export const UPDATE_USER_KYC_STATUS = (uuid: string) =>
+  `admin/users/${uuid}/kyc-status`;
 
 // Task Management
 export const GET_TASKS = "admin/tasks";

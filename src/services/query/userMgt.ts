@@ -6,6 +6,7 @@ import {
   getUserStats,
   updateUser,
   type UpdateUserBasicInfoPayload,
+  updateUserKycStatus,
 } from '../api/userMgt';
 import { QUERY_KEYS } from '../queryKeys';
 import type { ApiResponse, PaginatedData, UserListItem, UserStats, User } from '../../types';
@@ -68,6 +69,23 @@ export const useUpdateUser = (uuid: string) => {
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || 'Failed to update user');
+    },
+  });
+};
+
+export const useUpdateUserKycStatus = (uuid: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { status: 'verified' | 'rejected'; reason?: string }) =>
+      updateUserKycStatus(uuid, payload),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_USER_DETAILS, uuid] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_USERS] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_USER_STATS] });
+      toast.success(data.message || 'User KYC status updated successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to update user KYC status');
     },
   });
 };
