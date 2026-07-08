@@ -39,7 +39,7 @@ const UserManagement = () => {
     USERS_PER_PAGE,
     search,
     activeTab,
-    status,
+    status.toUpperCase(),
     city,
   );
 
@@ -81,11 +81,12 @@ const UserManagement = () => {
       taskPosted: item.profile?.tasksPostedCount || 0,
       tasksCompleted: item.profile?.tasksCompletedCount || 0,
       disputeCount: item.profile?.tasksDisputedCount || 0,
-      status: (item.isSuspended || item.status === "SUSPENDED")
-        ? "suspended"
-        : item.kycVerification?.status === "approved"
-          ? "verified"
-          : (item.kycVerification?.status || "not_verified"),
+      status:
+        item.isSuspended || item.status === "SUSPENDED"
+          ? "suspended"
+          : item.kycVerification?.status === "approved"
+            ? "verified"
+            : item.kycVerification?.status || "not_verified",
     }));
   }, [userData]);
 
