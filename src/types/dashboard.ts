@@ -81,6 +81,10 @@ export interface User {
     [key: string]: any;
   };
   wallet?: Wallet;
+  financialSummary?: {
+    totalFunding: number;
+    totalWithdrawal: number;
+  };
   recentReviews?: UserReview[];
   kycVerification?: KycVerification;
   tasksPostedCount?: number;
@@ -115,6 +119,20 @@ export interface User {
       clarity: number;
     };
   };
+  beneficiaries?: Beneficiary[];
+}
+
+export interface Beneficiary {
+  uuid: string;
+  accountName: string;
+  accountNumber: string;
+  bankCode: string;
+  bankName: string;
+  createdAt: string;
+  currency: string;
+  deletedAt?: string | null;
+  updatedAt: string;
+  userId: number;
 }
 
 export interface TopUsersData {
@@ -194,4 +212,11 @@ export interface AnalyticsQueryParams {
   startDate?: string;
   endDate?: string;
   filter?: AnalyticsFilter;
+}
+
+export interface UserCategoryDistribution {
+  categoryName: string;
+  state: string;
+  city: string;
+  userCount: number;
 }

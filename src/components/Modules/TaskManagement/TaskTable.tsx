@@ -1,5 +1,5 @@
 import React from "react";
-import { Eye } from "lucide-react";
+import { Eye, XCircle } from "lucide-react";
 import CustomTable from "../../common/CustomTable.tsx";
 
 import type { TaskItem, TaskStatus } from "../../../types/index.ts";
@@ -59,6 +59,8 @@ const statusConfig: Record<
   },
 };
 
+const CANCELLABLE_STATUSES: TaskStatus[] = ["open", "assigned", "in_progress"];
+
 const TaskStatusBadge: React.FC<{ status: TaskStatus }> = ({ status }) => {
   const s = statusConfig[status];
   return (
@@ -85,12 +87,14 @@ interface TaskTableProps {
   tasks: TaskItem[];
   isLoading?: boolean;
   onView: (task: TaskItem) => void;
+  onCancel?: (task: TaskItem) => void;
 }
 
 const TaskTable: React.FC<TaskTableProps> = ({
   tasks,
   isLoading = false,
   onView,
+  onCancel,
 }) => (
   <CustomTable headers={TASK_HEADERS} isLoading={isLoading}>
     {tasks.length === 0 && !isLoading ? (
@@ -132,13 +136,24 @@ const TaskTable: React.FC<TaskTableProps> = ({
             )}
           </td>
           <td className="px-6 py-4">
-            <button
-              onClick={() => onView(task)}
-              className="flex items-center gap-1.5 text-primary hover:text-green-700 font-semibold text-sm transition-colors"
-            >
-              <Eye size={16} />
-              View
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => onView(task)}
+                className="flex items-center gap-1.5 text-primary hover:text-green-700 font-semibold text-sm transition-colors"
+              >
+                <Eye size={16} />
+                View
+              </button>
+              {onCancel && CANCELLABLE_STATUSES.includes(task.status) && (
+                <button
+                  onClick={() => onCancel(task)}
+                  className="flex items-center gap-1.5 text-red-500 hover:text-red-700 font-semibold text-sm transition-colors"
+                >
+                  <XCircle size={16} />
+                  Cancel
+                </button>
+              )}
+            </div>
           </td>
         </tr>
       ))

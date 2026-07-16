@@ -1,6 +1,13 @@
-import React from 'react';
+import React from "react";
 
-export type TaskTabType = 'open' | 'assigned' | 'in_progress' | 'completed' | 'disputed';
+export type TaskTabType =
+  | "open"
+  | "assigned"
+  | "in_progress"
+  | "completed"
+  | "disputed"
+  | "paid"
+  | "cancelled";
 
 interface TaskTabsProps {
   activeTab: TaskTabType;
@@ -8,11 +15,12 @@ interface TaskTabsProps {
 }
 
 const TABS: { key: TaskTabType; label: string }[] = [
-  { key: 'open', label: 'Open' },
-  { key: 'assigned', label: 'Assigned' },
-  { key: 'in_progress', label: 'In Progress' },
-  { key: 'completed', label: 'Completed' },
-  { key: 'disputed', label: 'Disputed' },
+  { key: "open", label: "Open" },
+  { key: "assigned", label: "Assigned" },
+  { key: "in_progress", label: "In Progress" },
+  { key: "completed", label: "Completed" },
+  { key: "paid", label: "Paid" },
+  { key: "disputed", label: "Disputed" },
 ];
 
 const TaskTabs: React.FC<TaskTabsProps> = ({ activeTab, onChange }) => (
@@ -22,9 +30,10 @@ const TaskTabs: React.FC<TaskTabsProps> = ({ activeTab, onChange }) => (
         key={tab.key}
         onClick={() => onChange(tab.key)}
         className={`flex-1 md:flex-none px-8 py-3 text-base font-semibold transition-all relative
-          ${activeTab === tab.key
-            ? 'text-[#101828]'
-            : 'text-[#98A2B3] hover:text-[#475467]'
+          ${
+            activeTab === tab.key
+              ? "text-[#101828]"
+              : "text-[#98A2B3] hover:text-[#475467]"
           }`}
       >
         {tab.label}

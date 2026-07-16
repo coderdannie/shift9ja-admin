@@ -10,7 +10,8 @@ import {
   getMarketHealth,
   getRevenueAnalytics,
   getRetentionCohorts,
-  getFulfillmentMetrics
+  getFulfillmentMetrics,
+  getUserCategoryDistribution
 } from '../api/dashboard';
 import { QUERY_KEYS } from '../queryKeys';
 import type { 
@@ -26,7 +27,8 @@ import type {
   RevenueAnalytics,
   RetentionCohort,
   FulfillmentMetrics,
-  AnalyticsQueryParams
+  AnalyticsQueryParams,
+  UserCategoryDistribution
 } from '../../types/index.ts';
 
 export const useGetDashboardSummary = (params = {}, options?: Partial<UseQueryOptions<ApiResponse<DashboardSummary>>>) => {
@@ -118,6 +120,14 @@ export const useGetFulfillmentMetrics = (params: AnalyticsQueryParams = {}, opti
   return useQuery({
     queryKey: [QUERY_KEYS.GET_FULFILLMENT_METRICS, params],
     queryFn: () => getFulfillmentMetrics(params),
+    ...options,
+  });
+};
+
+export const useGetUserCategoryDistribution = (options?: Partial<UseQueryOptions<ApiResponse<UserCategoryDistribution[]>>>) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_USER_CATEGORY_DISTRIBUTION],
+    queryFn: getUserCategoryDistribution,
     ...options,
   });
 };

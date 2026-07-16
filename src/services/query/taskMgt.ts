@@ -1,6 +1,6 @@
-import { useQuery, useMutation, type UseQueryOptions } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, type UseQueryOptions } from '@tanstack/react-query';
 import { QUERY_KEYS } from '../queryKeys';
-import { getTaskStats, getTasks, getTaskDetails, resolveDispute, getSOSAlerts, resolveSOSAlert } from '../api/taskMgt';
+import { getTaskStats, getTasks, getTaskDetails, resolveDispute, getSOSAlerts, resolveSOSAlert, cancelTask } from '../api/taskMgt';
 import type { ApiResponse, PaginatedResponse, TaskItem, TaskListParams, ResolveDisputePayload } from '../../types';
 import { toast } from 'react-hot-toast';
 
@@ -58,5 +58,20 @@ export const useResolveSOSAlert = () => {
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || "Failed to resolve SOS alert");
     }
+  });
+};
+
+export const useCancelTask = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ uuid, reason }: { uuid: string; reason: string }) =>
+      cancelTask(uuid, { reason }),
+    onSuccess: () => {
+      toast.success("Task cancelled successfully!");
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_TASKS] });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Failed to cancel task");
+    },
   });
 };

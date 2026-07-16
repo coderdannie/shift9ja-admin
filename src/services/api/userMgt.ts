@@ -3,7 +3,7 @@ import axiosInstance from '../axiosInstance';
 import type { ApiResponse, PaginatedData, UserListItem, UserStats, User } from '../../types';
 
 export const getUsers = async ({ queryKey }: any): Promise<ApiResponse<PaginatedData<UserListItem>>> => {
-  const [, page, limit, searchTerm, role, status, city] = queryKey;
+  const [, page, limit, searchTerm, role, status, city, kycStatus, startDate, endDate] = queryKey;
 
   const params = new URLSearchParams();
 
@@ -13,6 +13,9 @@ export const getUsers = async ({ queryKey }: any): Promise<ApiResponse<Paginated
   if (role) params.append('role', role);
   if (status) params.append('status', status);
   if (city) params.append('city', city);
+  if (kycStatus) params.append('kycStatus', kycStatus);
+  if (startDate) params.append('startDate', startDate);
+  if (endDate) params.append('endDate', endDate);
 
   const res = await axiosInstance.get(`${API.GET_USERS}?${params.toString()}`);
   return res.data;

@@ -13,7 +13,8 @@ import type {
   RevenueAnalytics,
   RetentionCohort,
   FulfillmentMetrics,
-  AnalyticsQueryParams
+  AnalyticsQueryParams,
+  UserCategoryDistribution
 } from '../../types/index.ts';
 
 export const getDashboardSummary = async (params = {}): Promise<ApiResponse<DashboardSummary>> => {
@@ -63,5 +64,10 @@ export const getRetentionCohorts = async (params: AnalyticsQueryParams = {}): Pr
 
 export const getFulfillmentMetrics = async (params: AnalyticsQueryParams = {}): Promise<ApiResponse<FulfillmentMetrics[]>> => {
   const res = await axiosInstance.get(API.GET_FULFILLMENT_METRICS, { params });
+  return res.data;
+};
+
+export const getUserCategoryDistribution = async (): Promise<ApiResponse<UserCategoryDistribution[]>> => {
+  const res = await axiosInstance.get(API.GET_USER_CATEGORY_DISTRIBUTION);
   return res.data;
 };
