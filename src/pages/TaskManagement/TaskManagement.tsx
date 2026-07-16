@@ -7,9 +7,14 @@ import Pagination from "../../components/common/Pagination";
 import TaskTabs from "../../components/Modules/TaskManagement/TaskTabs.tsx";
 import type { TaskTabType } from "../../components/Modules/TaskManagement/TaskTabs.tsx";
 import TaskTable from "../../components/Modules/TaskManagement/TaskTable.tsx";
+import CancelTaskModal from "../../components/Modules/TaskManagement/CancelTaskModal.tsx";
 import UserStatsBar from "../../components/Modules/UserManagement/UserStatsBar.tsx";
 import { Toaster } from "react-hot-toast";
-import { useGetTaskStats, useGetTasks } from "../../services/query/taskMgt";
+import {
+  useGetTaskStats,
+  useGetTasks,
+  useCancelTask,
+} from "../../services/query/taskMgt";
 import type { TaskItem, TaskStatus } from "../../types/index.ts";
 
 const TASKS_PER_PAGE = 10;
@@ -20,14 +25,20 @@ const TAB_STATUS_MAP: Record<TaskTabType, TaskStatus | ""> = {
   in_progress: "in_progress",
   completed: "completed",
   disputed: "disputed",
+  paid: "paid",
+  cancelled: "cancelled",
 };
 
 const TaskManagement: React.FC = () => {
   const navigate = useNavigate();
   const { data: taskStats, isPending: isLoadingStats } = useGetTaskStats();
   const [currentPage, setCurrentPage] = useState(1);
-  const [activeTab, setActiveTab] = useState<TaskTabType>("in_progress");
+  const [activeTab, setActiveTab] = useState<TaskTabType>("open");
   const [search, setSearch] = useState("");
+
+  // Cancel modal state
+  const [taskToCancel, setTaskToCancel] = useState<TaskItem | null>(null);
+  const { mutate: cancelTask, isPending: isCancelling } = useCancelTask();
 
   const { data: tasksData, isPending: isLoadingTasks } = useGetTasks({
     page: currentPage,
@@ -70,12 +81,30 @@ const TaskManagement: React.FC = () => {
   const handleTabChange = (tab: TaskTabType) => {
     setActiveTab(tab);
     setCurrentPage(1);
-    // setSearch(''); // Optionally keep search when switching tabs
+  };
+
+  const handleCancelConfirm = (reason: string) => {
+    if (!taskToCancel) return;
+    cancelTask(
+      { uuid: taskToCancel.uuid, reason },
+      {
+        onSuccess: () => setTaskToCancel(null),
+      },
+    );
   };
 
   return (
     <div className="flex flex-col gap-6">
       <Toaster position="top-right" />
+
+      {/* Cancel Modal */}
+      <CancelTaskModal
+        isOpen={!!taskToCancel}
+        taskTitle={taskToCancel?.title}
+        onClose={() => setTaskToCancel(null)}
+        onConfirm={handleCancelConfirm}
+        isLoading={isCancelling}
+      />
 
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -142,6 +171,7 @@ const TaskManagement: React.FC = () => {
         tasks={tasks}
         isLoading={isLoadingTasks}
         onView={(task) => navigate(`/task-management/${task.uuid}`)}
+        onCancel={(task) => setTaskToCancel(task)}
       />
 
       {/* Pagination */}

@@ -20,6 +20,7 @@ export const RESOLVE_DISPUTE = (uuid: string) =>
   `admin/tasks/${uuid}/resolve-dispute`;
 export const GET_SOS_ALERTS = "admin/tasks/sos-alerts";
 export const RESOLVE_SOS_ALERT = (uuid: string) => `admin/tasks/sos-alerts/${uuid}/resolve`;
+export const CANCEL_TASK = (uuid: string) => `admin/tasks/${uuid}/cancel`;
 
 // Payment & Escrow
 export const GET_PAYMENT_STATS = "admin/payments/stats";
@@ -37,6 +38,7 @@ export const GET_MARKET_HEALTH = "admin/dashboard/market-health";
 export const GET_REVENUE_ANALYTICS = "admin/dashboard/revenue-analytics";
 export const GET_RETENTION_COHORTS = "admin/dashboard/retention-cohorts";
 export const GET_FULFILLMENT_METRICS = "admin/dashboard/fulfillment-metrics";
+export const GET_USER_CATEGORY_DISTRIBUTION = "admin/dashboard/user-category-distribution";
 
 // Roles & Permissions
 export const GET_ROLES = "admin/roles";

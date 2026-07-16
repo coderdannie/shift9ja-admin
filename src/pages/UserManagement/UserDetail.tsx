@@ -382,8 +382,8 @@ const UserDetail: React.FC = () => {
           apiData.wallet?.currency === "NGN"
             ? "₦"
             : apiData.wallet?.currency || "₦",
-        totalFunding: apiData.wallet?.totalFunding || 0,
-        totalWithdrawal: apiData.wallet?.totalWithdrawal || 0,
+        totalFunding: apiData.financialSummary?.totalFunding || 0,
+        totalWithdrawal: apiData.financialSummary?.totalWithdrawal || 0,
         escrowBalance: apiData.wallet?.escrowBalance || 0,
       },
       taskStats: {
@@ -436,6 +436,7 @@ const UserDetail: React.FC = () => {
         : null,
       recentReviews: apiData.recentReviews || [],
       averageRating: apiData.profile?.averageRating || 0,
+      beneficiaries: apiData.beneficiaries || [],
     };
   }, [apiData]);
 
@@ -825,7 +826,7 @@ const UserDetail: React.FC = () => {
                 </h2>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <WalletCard
                   label="Available Balance"
                   value={`${user.wallet.currency}${user.wallet.balance.toLocaleString()}`}
@@ -850,6 +851,47 @@ const UserDetail: React.FC = () => {
                   icon={TrendingDown}
                   color="bg-rose-600"
                 />
+              </div>
+
+              {/* Saved Beneficiary Accounts */}
+              <div className="border-t border-[#F2F4F7] pt-8">
+                <h3 className="text-sm font-bold text-[#344054] mb-4 uppercase tracking-wider">
+                  Saved Beneficiary Accounts
+                </h3>
+                {!user.beneficiaries || user.beneficiaries.length === 0 ? (
+                  <div className="py-6 text-center text-[#98A2B3] italic text-sm border border-dashed border-[#EAECF0] rounded-2xl bg-[#F9FAFB]">
+                    No saved beneficiary bank accounts found for this user.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {user.beneficiaries.map((b: any) => (
+                      <div
+                        key={b.uuid}
+                        className="bg-[#F9FAFB] rounded-2xl border border-[#EAECF0] p-5 hover:shadow-sm transition-all duration-300"
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/5 text-primary border border-primary/10">
+                            {b.currency || "NGN"}
+                          </span>
+                          <span className="text-[10px] text-[#667085] font-semibold">
+                            Code: {b.bankCode}
+                          </span>
+                        </div>
+                        <div className="space-y-1">
+                          <h4 className="text-sm font-bold text-[#101828] uppercase tracking-wide truncate">
+                            {b.accountName}
+                          </h4>
+                          <p className="text-sm font-mono text-[#475467] font-semibold">
+                            {b.accountNumber}
+                          </p>
+                          <p className="text-xs text-[#667085] font-medium">
+                            {b.bankName}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 

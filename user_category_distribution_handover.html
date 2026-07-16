@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shift9ja - Frontend Integration Guide (User Category Distribution)</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-primary: #090d16;
+      --bg-secondary: #121824;
+      --bg-tertiary: #1b2336;
+      --accent-indigo: #6366f1;
+      --accent-purple: #8b5cf6;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --border-color: rgba(255, 255, 255, 0.05);
+      --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      --glow-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+      --font-family: 'Plus Jakarta Sans', sans-serif;
+      --font-title: 'Outfit', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      font-family: var(--font-family);
+      line-height: 1.6;
+      overflow-x: hidden;
+      padding-bottom: 80px;
+    }
+
+    .glow-bg {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, rgba(9, 13, 22, 0) 70%);
+      top: -200px;
+      right: -100px;
+      z-index: -1;
+      pointer-events: none;
+    }
+    
+    .glow-bg-2 {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.05) 0%, rgba(9, 13, 22, 0) 70%);
+      bottom: 10%;
+      left: -100px;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    header {
+      padding: 60px 0 40px 0;
+      border-bottom: 1px solid var(--border-color);
+      position: relative;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 16px;
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 99px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #a5b4fc;
+      margin-bottom: 20px;
+      gap: 8px;
+    }
+
+    .header-badge::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background-color: var(--accent-indigo);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent-indigo);
+    }
+
+    h1 {
+      font-family: var(--font-title);
+      font-size: 2.8rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 16px;
+      background: linear-gradient(120deg, #ffffff 40%, #c7d2fe 80%, #a5b4fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.15rem;
+      max-width: 700px;
+      font-weight: 400;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 8fr 4fr;
+      gap: 32px;
+      margin-top: 48px;
+    }
+
+    @media (max-width: 992px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 32px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--gradient-primary);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .card:hover {
+      border-color: rgba(99, 102, 241, 0.25);
+      box-shadow: var(--glow-shadow);
+    }
+
+    .card:hover::before {
+      opacity: 1;
+    }
+
+    h2 {
+      font-family: var(--font-title);
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    h2 svg {
+      width: 24px;
+      height: 24px;
+      color: var(--accent-indigo);
+    }
+
+    h3 {
+      font-family: var(--font-title);
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 24px;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+
+    p {
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      font-size: 0.98rem;
+    }
+
+    .feature-list {
+      list-style: none;
+      margin: 20px 0;
+    }
+
+    .feature-list li {
+      position: relative;
+      padding-left: 28px;
+      margin-bottom: 14px;
+      font-size: 0.98rem;
+      color: var(--text-main);
+    }
+
+    .feature-list li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: var(--accent-indigo);
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+
+    .alert-box {
+      background: rgba(99, 102, 241, 0.05);
+      border: 1px solid rgba(99, 102, 241, 0.15);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      display: flex;
+      gap: 16px;
+    }
+
+    .alert-box.warning {
+      background: rgba(245, 158, 11, 0.05);
+      border: 1px solid rgba(245, 158, 11, 0.15);
+    }
+
+    .alert-icon {
+      font-size: 1.5rem;
+      line-height: 1;
+    }
+
+    .alert-content h4 {
+      font-family: var(--font-title);
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #fff;
+    }
+
+    .alert-content p {
+      margin-bottom: 0;
+      font-size: 0.92rem;
+    }
+
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 24px;
+      gap: 8px;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-family: var(--font-family);
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 12px 20px;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.3s ease;
+      border-radius: 8px 8px 0 0;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+    }
+
+    .tab-btn.active {
+      color: var(--accent-indigo);
+    }
+
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background-color: var(--accent-indigo);
+      box-shadow: 0 0 10px var(--accent-indigo);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+    }
+
+    th, td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    th {
+      background-color: var(--bg-tertiary);
+      font-family: var(--font-title);
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    td {
+      font-size: 0.92rem;
+    }
+
+    .method-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-align: center;
+      width: 70px;
+    }
+
+    .method-badge.get {
+      background-color: rgba(99, 102, 241, 0.1);
+      color: var(--accent-indigo);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+
+    .endpoint-path {
+      font-family: 'Consolas', 'Courier New', Courier, monospace;
+      color: #e2e8f0;
+      font-weight: 600;
+    }
+
+    pre {
+      background-color: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      overflow-x: auto;
+      font-family: 'Consolas', 'Courier New', Courier, monospace;
+      font-size: 0.88rem;
+      color: #e2e8f0;
+      margin: 16px 0;
+    }
+
+    code {
+      font-family: 'Consolas', 'Courier New', Courier, monospace;
+      background-color: var(--bg-tertiary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      color: #e2e8f0;
+    }
+
+    /* Interactive Sandbox styling */
+    .sandbox-container {
+      background-color: var(--bg-secondary);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 24px;
+      margin-top: 24px;
+    }
+
+    .sandbox-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .sandbox-title {
+      font-family: var(--font-title);
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .sandbox-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      background-color: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 99px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--accent-emerald);
+    }
+
+    .sandbox-controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .form-control {
+      background-color: var(--bg-tertiary);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #fff;
+      font-family: var(--font-family);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .form-control:focus {
+      border-color: var(--accent-indigo);
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-box {
+      background-color: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-box-value {
+      font-family: var(--font-title);
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .stat-box-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Chart Simulation styles */
+    .chart-container {
+      background-color: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .chart-title {
+      font-family: var(--font-title);
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .chart-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .chart-row {
+      display: grid;
+      grid-template-columns: 140px 1fr 60px;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .chart-label {
+      font-size: 0.88rem;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chart-bar-outer {
+      background-color: rgba(255, 255, 255, 0.03);
+      border-radius: 6px;
+      height: 24px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .chart-bar-inner {
+      height: 100%;
+      background: var(--gradient-primary);
+      border-radius: 6px;
+      width: 0;
+      transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .chart-value {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #fff;
+      text-align: right;
+    }
+
+    /* Sandbox Grid/Table styling */
+    .sandbox-table-container {
+      background-color: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .sandbox-table-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .sandbox-search {
+      width: 260px;
+      position: relative;
+    }
+
+    .sandbox-search input {
+      width: 100%;
+      padding-left: 36px;
+    }
+
+    .sandbox-search svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      color: var(--text-muted);
+    }
+
+    .sandbox-table-footer {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .pagination-btns {
+      display: flex;
+      gap: 8px;
+    }
+
+    .pagination-btn {
+      background-color: var(--bg-secondary);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: background-color 0.2s ease;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+      background-color: rgba(99, 102, 241, 0.15);
+      border-color: var(--accent-indigo);
+    }
+
+    .pagination-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .empty-state {
+      padding: 40px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .table-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background-color: rgba(99, 102, 241, 0.08);
+      border: 1px solid rgba(99, 102, 241, 0.15);
+      color: #a5b4fc;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    /* Quick Links Card */
+    .quick-links {
+      position: sticky;
+      top: 40px;
+    }
+
+    .link-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+
+    .link-item:hover {
+      background-color: rgba(255, 255, 255, 0.03);
+      color: #fff;
+    }
+
+    .link-item.active {
+      background-color: rgba(99, 102, 241, 0.08);
+      color: #a5b4fc;
+      border: 1px solid rgba(99, 102, 241, 0.1);
+      font-weight: 600;
+    }
+
+    .link-item svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .tab-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .lang-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--accent-indigo);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow-bg"></div>
+  <div class="glow-bg-2"></div>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="header-badge">Admin Dashboard Integration Guide</div>
+      <h1>Helper Category Distribution</h1>
+      <p class="subtitle">Integration manual for frontend and product engineers detailing helper metrics distribution across task categories and geographical regions.</p>
+    </header>
+
+    <!-- Main Grid -->
+    <div class="grid">
+      <!-- Left Column (Main Content) -->
+      <main>
+        
+        <!-- Tabs Selector -->
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab(event, 'overview')">Overview & API Docs</button>
+          <button class="tab-btn" onclick="switchTab(event, 'ux-design')">UX & Design System</button>
+          <button class="tab-btn" onclick="switchTab(event, 'interactive-sandbox')">Interactive Sandbox Sandbox</button>
+        </div>
+
+        <!-- Tab 1: Overview & API Docs -->
+        <div id="overview" class="tab-content active">
+          
+          <section class="card">
+            <h2>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+              </svg>
+              1. Business Context & API Design
+            </h2>
+            <p>To optimize helper acquisition and task dispatching campaigns, administrators need to analyze the current distribution of <strong>Active Helpers</strong> grouped by their <strong>Primary Task Category</strong> and location (State and City).</p>
+            
+            <p>The backend exposes a highly optimized aggregation endpoint that compiles database metrics, caches the result for 30 minutes to safeguard database resources, and formats it cleanly for data grids and chart modules.</p>
+
+            <div class="alert-box">
+              <span class="alert-icon">💡</span>
+              <div class="alert-content">
+                <h4>Response Metrics Summary</h4>
+                <p>This endpoint filters for users who hold the <code>"helper"</code> role, have an <code>"ACTIVE"</code> profile status, and evaluates their locations based on their active geolocations table mapping.</p>
+              </div>
+            </div>
+
+            <h3>API Endpoint Specification</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Method</th>
+                  <th>Endpoint</th>
+                  <th>Headers</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="method-badge get">GET</span></td>
+                  <td><span class="endpoint-path">/admin/dashboard/user-category-distribution</span></td>
+                  <td>
+                    <code>Authorization: Bearer &lt;JWT&gt;</code>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h3>Caching Architecture</h3>
+            <ul class="feature-list">
+              <li><strong>Cache Strategy</strong>: Managed by NestJS <code>CacheInterceptor</code>.</li>
+              <li><strong>Cache Key</strong>: <code>admin_user_category_distribution</code>.</li>
+              <li><strong>TTL (Time-To-Live)</strong>: 1800 seconds (30 minutes). Avoid rapid page-reloads requesting this raw from the database. Let the UI rely on local memory state or trigger manual refresh bypasses only when necessary.</li>
+            </ul>
+
+            <div class="tab-header" style="margin-top: 24px;">
+              <span class="lang-label">API SUCCESS RESPONSE DTO (JSON)</span>
+            </div>
+            <pre>
+{
+  "success": true,
+  "message": "User category distribution retrieved successfully",
+  "data": [
+    {
+      "categoryName": "Cleaning",
+      "state": "Lagos",
+      "city": "Ikeja",
+      "userCount": 45
+    },
+    {
+      "categoryName": "Plumbing",
+      "state": "Lagos",
+      "city": "Lekki",
+      "userCount": 32
+    },
+    {
+      "categoryName": "Electrical Work",
+      "state": "FCT",
+      "city": "Wuse",
+      "userCount": 28
+    },
+    {
+      "categoryName": "Cleaning",
+      "state": "FCT",
+      "city": "Gwarinpa",
+      "userCount": 19
+    }
+  ]
+}</pre>
+          </section>
+        </div>
+
+        <!-- Tab 2: UX & Design System -->
+        <div id="ux-design" class="tab-content">
+          <section class="card">
+            <h2>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" />
+              </svg>
+              2. Interface Design Recommendations
+            </h2>
+            <p>Visualizing multi-dimensional data (Category x State x City x Helper Count) requires clear structures to prevent dashboard noise. We recommend implementing the following modules in the Admin View:</p>
+
+            <h3>Visual Hierarchy & Layout Flow</h3>
+            <ul class="feature-list">
+              <li><strong>KPI Summary Grid (Top Row)</strong>: Show summary widgets including <em>Total Active Helpers</em>, <em>Primary Hotspots (State)</em>, and <em>Most Active Helper Specialty</em>. This updates in real-time based on filters.</li>
+              <li><strong>Geographical Filter Panel</strong>: A sticky filter bar allowing admins to narrow down the dataset by State, City, or Category before examining details.</li>
+              <li><strong>Dynamic Bar Chart (Middle)</strong>: Render a horizontal bar chart showing the helper counts per category. A horizontal format handles long category names without overlapping labels.</li>
+              <li><strong>Interactive Heatmap Matrix</strong>: An optional visualization grid displaying categories as rows and cities as columns. The cells should change opacity/color based on helper density.</li>
+              <li><strong>Paginated Data Grid (Bottom)</strong>: A high-performance table containing search indexing, column sorting (click header to sort userCount descending), and export controls (CSV/Excel).</li>
+            </ul>
+
+            <div class="alert-box warning">
+              <span class="alert-icon">⚠️</span>
+              <div class="alert-content">
+                <h4>Design Gotcha: "Unknown" Locations</h4>
+                <p>When the query returns <code>state: "Unknown"</code> or <code>city: "Unknown"</code>, style these rows with muted labels to indicate missing profile configurations. Do not filter them out, as these helpers still contribute to the total counts.</p>
+              </div>
+            </div>
+
+            <h3>Theme Tokens & Colors</h3>
+            <p>Integrate this module using Shift9ja's Admin Theme colors:</p>
+            <ul>
+              <li><strong>Background Cards</strong>: <code>#121824</code> (Secondary card background)</li>
+              <li><strong>Data Highlights</strong>: Indigo-to-Purple gradients (<code>linear-gradient(135deg, #6366f1, #8b5cf6)</code>)</li>
+              <li><strong>State Labels</strong>: Use standard badge colors (Emerald green for active metrics, Amber for warning indicators).</li>
+            </ul>
+          </section>
+        </div>
+
+        <!-- Tab 3: Interactive Sandbox -->
+        <div id="interactive-sandbox" class="tab-content">
+          <section class="card">
+            <h2>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14.25 9.75L16.5 12l-2.25 2.25m-4.5 0L7.5 12l2.25-2.25M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" />
+              </svg>
+              3. Interactive Sandbox Demo
+            </h2>
+            <p>Interact with the live widget mockup below to understand the proposed component architecture, layout structure, filtering dependencies, and page states.</p>
+
+            <div class="sandbox-container">
+              <div class="sandbox-header">
+                <div>
+                  <span class="sandbox-title">Helper Distribution Dashboard</span>
+                  <p style="margin: 4px 0 0 0; font-size: 0.85rem;">Simulating real API telemetry states</p>
+                </div>
+                <span class="sandbox-badge">● API Online</span>
+              </div>
+
+              <!-- KPI summary widgets -->
+              <div class="stats-row">
+                <div class="stat-box">
+                  <div class="stat-box-value" id="kpi-total-helpers">180</div>
+                  <div class="stat-box-label">Total Helpers</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-box-value" id="kpi-top-category">Cleaning</div>
+                  <div class="stat-box-label">Top Category</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-box-value" id="kpi-top-state">Lagos</div>
+                  <div class="stat-box-label">Top State</div>
+                </div>
+              </div>
+
+              <!-- Filter Panel -->
+              <div class="sandbox-controls">
+                <div class="form-group">
+                  <label for="filter-state">Filter State</label>
+                  <select id="filter-state" class="form-control" onchange="applyFilters()">
+                    <option value="ALL">All States</option>
+                    <option value="Lagos">Lagos</option>
+                    <option value="FCT">FCT (Abuja)</option>
+                    <option value="Rivers">Rivers</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="filter-city">Filter City</label>
+                  <select id="filter-city" class="form-control" onchange="applyFilters()">
+                    <option value="ALL">All Cities</option>
+                    <!-- Cities populated dynamically -->
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="filter-category">Filter Category</label>
+                  <select id="filter-category" class="form-control" onchange="applyFilters()">
+                    <option value="ALL">All Categories</option>
+                    <option value="Cleaning">Cleaning</option>
+                    <option value="Plumbing">Plumbing</option>
+                    <option value="Electrical Work">Electrical Work</option>
+                    <option value="Moving Help">Moving Help</option>
+                    <option value="IT Support">IT Support</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Horizontal Chart Simulation -->
+              <div class="chart-container">
+                <div class="chart-title">
+                  <span>Helpers Count by Category</span>
+                  <span style="font-size: 0.85rem; color: var(--text-muted);">Interactive Chart Representation</span>
+                </div>
+                <div class="chart-bars" id="bar-chart-content">
+                  <!-- Bars render dynamically -->
+                </div>
+              </div>
+
+              <!-- Data Table Grid -->
+              <div class="sandbox-table-container">
+                <div class="sandbox-table-header">
+                  <span style="font-weight: 600; font-size: 0.95rem;">Granular Distribution Breakdown</span>
+                  <div class="sandbox-search">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.637 10.637z" />
+                    </svg>
+                    <input type="text" id="table-search" class="form-control" placeholder="Search categories, cities..." oninput="applyFilters()">
+                  </div>
+                </div>
+
+                <table id="sandbox-grid">
+                  <thead>
+                    <tr>
+                      <th style="cursor: pointer;" onclick="toggleSort('categoryName')">Category Name</th>
+                      <th style="cursor: pointer;" onclick="toggleSort('state')">State</th>
+                      <th style="cursor: pointer;" onclick="toggleSort('city')">City</th>
+                      <th style="cursor: pointer;" onclick="toggleSort('userCount')">Helper Count</th>
+                    </tr>
+                  </thead>
+                  <tbody id="table-body">
+                    <!-- Dynamic rendering -->
+                  </tbody>
+                </table>
+
+                <div class="sandbox-table-footer">
+                  <span id="showing-entries-label">Showing 1 to 5 of 8 entries</span>
+                  <div class="pagination-btns">
+                    <button class="pagination-btn" id="btn-prev" onclick="changePage(-1)" disabled>Previous</button>
+                    <button class="pagination-btn" id="btn-next" onclick="changePage(1)">Next</button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+        </div>
+
+      </main>
+
+      <!-- Right Column (Sidebar Quick Links / Metadata) -->
+      <aside>
+        <div class="quick-links">
+          <div class="card" style="padding: 24px;">
+            <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">Documentation Nav</h3>
+            
+            <a href="#overview" class="link-item active" id="nav-overview" onclick="switchTab(event, 'overview')">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+              </svg>
+              API Details & Spec
+            </a>
+            
+            <a href="#ux-design" class="link-item" id="nav-ux" onclick="switchTab(event, 'ux-design')">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" />
+              </svg>
+              UI/UX Recommendations
+            </a>
+            
+            <a href="#interactive-sandbox" class="link-item" id="nav-sandbox" onclick="switchTab(event, 'interactive-sandbox')">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14.25 9.75L16.5 12l-2.25 2.25m-4.5 0L7.5 12l2.25-2.25M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" />
+              </svg>
+              Interactive sandbox
+            </a>
+
+            <div style="border-top: 1px solid var(--border-color); margin: 20px 0; padding-top: 16px;">
+              <h4 style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">Developer Info</h4>
+              <p style="font-size: 0.8rem; margin-bottom: 6px;"><strong>Target Controller</strong>: <br><span style="font-family: monospace;">AdminDashboardController</span></p>
+              <p style="font-size: 0.8rem; margin-bottom: 6px;"><strong>Service Method</strong>: <br><span style="font-family: monospace;">getUserCategoryDistribution()</span></p>
+              <p style="font-size: 0.8rem; margin-bottom: 0;"><strong>DTO Definition</strong>: <br><span style="font-family: monospace;">UserCategoryDistributionResponseDto</span></p>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Client-side logic for tabs and sandbox mockup -->
+  <script>
+    // Live simulation dataset representing a clean DB payload state
+    const databaseMockPayload = [
+      { categoryName: "Cleaning", state: "Lagos", city: "Ikeja", userCount: 45 },
+      { categoryName: "Cleaning", state: "Lagos", city: "Lekki", userCount: 22 },
+      { categoryName: "Cleaning", state: "FCT", city: "Gwarinpa", userCount: 19 },
+      { categoryName: "Cleaning", state: "Rivers", city: "Port Harcourt", userCount: 14 },
+      
+      { categoryName: "Plumbing", state: "Lagos", city: "Lekki", userCount: 32 },
+      { categoryName: "Plumbing", state: "Lagos", city: "Surulere", userCount: 18 },
+      { categoryName: "Plumbing", state: "FCT", city: "Wuse", userCount: 11 },
+      
+      { categoryName: "Electrical Work", state: "FCT", city: "Wuse", userCount: 28 },
+      { categoryName: "Electrical Work", state: "Lagos", city: "Ikeja", userCount: 25 },
+      { categoryName: "Electrical Work", state: "Rivers", city: "Port Harcourt", userCount: 9 },
+      
+      { categoryName: "Moving Help", state: "Lagos", city: "Ikeja", userCount: 15 },
+      { categoryName: "Moving Help", state: "Lagos", city: "Surulere", userCount: 12 },
+      { categoryName: "Moving Help", state: "FCT", city: "Gwarinpa", userCount: 7 },
+      
+      { categoryName: "IT Support", state: "Lagos", city: "Lekki", userCount: 20 },
+      { categoryName: "IT Support", state: "FCT", city: "Wuse", userCount: 16 }
+    ];
+
+    // Filter dependency setup (State -> Cities mapping)
+    const stateCitiesMap = {
+      "Lagos": ["Ikeja", "Lekki", "Surulere"],
+      "FCT": ["Wuse", "Gwarinpa"],
+      "Rivers": ["Port Harcourt"]
+    };
+
+    // Filter/Pagination States
+    let currentFilteredData = [...databaseMockPayload];
+    let sortColumn = "userCount";
+    let sortAscending = false;
+    let currentPage = 1;
+    const pageSize = 5;
+
+    // Render loop
+    window.onload = function() {
+      populateCityOptions();
+      applyFilters();
+    };
+
+    // Setup tabs
+    function switchTab(evt, tabId) {
+      // Hide all tabs
+      const tabContents = document.querySelectorAll(".tab-content");
+      tabContents.forEach(content => content.classList.remove("active"));
+      
+      // Deactivate buttons
+      const tabBtns = document.querySelectorAll(".tab-btn");
+      tabBtns.forEach(btn => btn.classList.remove("active"));
+
+      // Deactivate sidebar links
+      const navLinks = document.querySelectorAll(".link-item");
+      navLinks.forEach(link => link.classList.remove("active"));
+
+      // Activate selected
+      document.getElementById(tabId).classList.add("active");
+      
+      // If button triggered, activate it
+      if (evt && evt.currentTarget && evt.currentTarget.classList.contains("tab-btn")) {
+        evt.currentTarget.classList.add("active");
+        
+        // Match sidebar link
+        const targetNavId = tabId === 'overview' ? 'nav-overview' : (tabId === 'ux-design' ? 'nav-ux' : 'nav-sandbox');
+        document.getElementById(targetNavId).classList.add("active");
+      } else if (evt && evt.currentTarget && evt.currentTarget.classList.contains("link-item")) {
+        evt.currentTarget.classList.add("active");
+        
+        // Match main tab button
+        const targetBtnIndex = tabId === 'overview' ? 0 : (tabId === 'ux-design' ? 1 : 2);
+        document.querySelectorAll(".tab-btn")[targetBtnIndex].classList.add("active");
+      }
+    }
+
+    // Populate City options based on selected State
+    function populateCityOptions() {
+      const stateSelect = document.getElementById("filter-state");
+      const citySelect = document.getElementById("filter-city");
+      const selectedState = stateSelect.value;
+      
+      // Clear city list
+      citySelect.innerHTML = '<option value="ALL">All Cities</option>';
+      
+      if (selectedState !== "ALL" && stateCitiesMap[selectedState]) {
+        stateCitiesMap[selectedState].forEach(city => {
+          const opt = document.createElement("option");
+          opt.value = city;
+          opt.innerText = city;
+          citySelect.appendChild(opt);
+        });
+      }
+    }
+
+    // Triggered on filter control adjustments
+    function applyFilters() {
+      const stateFilter = document.getElementById("filter-state").value;
+      const cityFilter = document.getElementById("filter-city").value;
+      const categoryFilter = document.getElementById("filter-category").value;
+      const searchQuery = document.getElementById("table-search").value.toLowerCase();
+
+      // Recalculate cities dropdown if state changed
+      const oldState = document.getElementById("filter-state").getAttribute("data-prev") || "ALL";
+      if (stateFilter !== oldState) {
+        document.getElementById("filter-state").setAttribute("data-prev", stateFilter);
+        populateCityOptions();
+      }
+
+      currentFilteredData = databaseMockPayload.filter(item => {
+        const matchesState = stateFilter === "ALL" || item.state === stateFilter;
+        const matchesCity = cityFilter === "ALL" || item.city === cityFilter;
+        const matchesCategory = categoryFilter === "ALL" || item.categoryName === categoryFilter;
+        
+        const matchesSearch = !searchQuery || 
+                              item.categoryName.toLowerCase().includes(searchQuery) ||
+                              item.city.toLowerCase().includes(searchQuery) ||
+                              item.state.toLowerCase().includes(searchQuery);
+
+        return matchesState && matchesCity && matchesCategory && matchesSearch;
+      });
+
+      // Apply current sort state
+      sortDataset();
+      currentPage = 1;
+      
+      // Redraw UI components
+      updateKPIs();
+      renderBarChart();
+      renderTable();
+    }
+
+    // Sort Handler
+    function toggleSort(column) {
+      if (sortColumn === column) {
+        sortAscending = !sortAscending;
+      } else {
+        sortColumn = column;
+        sortAscending = true;
+      }
+      sortDataset();
+      renderTable();
+    }
+
+    function sortDataset() {
+      currentFilteredData.sort((a, b) => {
+        let valueA = a[sortColumn];
+        let valueB = b[sortColumn];
+
+        if (typeof valueA === 'string') {
+          valueA = valueA.toLowerCase();
+          valueB = valueB.toLowerCase();
+        }
+
+        if (valueA < valueB) return sortAscending ? -1 : 1;
+        if (valueA > valueB) return sortAscending ? 1 : -1;
+        return 0;
+      });
+    }
+
+    // Render top KPI stats
+    function updateKPIs() {
+      const totalHelpers = currentFilteredData.reduce((sum, item) => sum + item.userCount, 0);
+      document.getElementById("kpi-total-helpers").innerText = totalHelpers.toLocaleString();
+
+      // Find top category
+      const categoryCounts = {};
+      let topCategory = "N/A";
+      let maxCatCount = 0;
+      
+      // Find top state
+      const stateCounts = {};
+      let topState = "N/A";
+      let maxStateCount = 0;
+
+      currentFilteredData.forEach(item => {
+        categoryCounts[item.categoryName] = (categoryCounts[item.categoryName] || 0) + item.userCount;
+        stateCounts[item.state] = (stateCounts[item.state] || 0) + item.userCount;
+      });
+
+      for (const cat in categoryCounts) {
+        if (categoryCounts[cat] > maxCatCount) {
+          maxCatCount = categoryCounts[cat];
+          topCategory = cat;
+        }
+      }
+
+      for (const state in stateCounts) {
+        if (stateCounts[state] > maxStateCount) {
+          maxStateCount = stateCounts[state];
+          topState = state;
+        }
+      }
+
+      document.getElementById("kpi-top-category").innerText = topCategory;
+      document.getElementById("kpi-top-state").innerText = topState;
+    }
+
+    // Render bar chart visualizer
+    function renderBarChart() {
+      const chartContent = document.getElementById("bar-chart-content");
+      chartContent.innerHTML = "";
+
+      // Aggregate counts by category for current filtered records
+      const categoryAggMap = {};
+      currentFilteredData.forEach(item => {
+        categoryAggMap[item.categoryName] = (categoryAggMap[item.categoryName] || 0) + item.userCount;
+      });
+
+      // Convert to sorted array
+      const sortedCategories = Object.keys(categoryAggMap).map(cat => ({
+        name: cat,
+        count: categoryAggMap[cat]
+      })).sort((a, b) => b.count - a.count);
+
+      if (sortedCategories.length === 0) {
+        chartContent.innerHTML = '<div class="empty-state">No chart telemetry matching the current filters.</div>';
+        return;
+      }
+
+      // Determine max value for percentage scaling
+      const maxVal = Math.max(...sortedCategories.map(c => c.count));
+
+      sortedCategories.forEach(c => {
+        const percentage = maxVal > 0 ? (c.count / maxVal) * 100 : 0;
+        
+        const row = document.createElement("div");
+        row.className = "chart-row";
+        
+        const label = document.createElement("div");
+        label.className = "chart-label";
+        label.innerText = c.name;
+        label.title = c.name;
+        
+        const outerBar = document.createElement("div");
+        outerBar.className = "chart-bar-outer";
+        
+        const innerBar = document.createElement("div");
+        innerBar.className = "chart-bar-inner";
+        
+        const value = document.createElement("div");
+        value.className = "chart-value";
+        value.innerText = c.count.toLocaleString();
+
+        row.appendChild(label);
+        outerBar.appendChild(innerBar);
+        row.appendChild(outerBar);
+        row.appendChild(value);
+        chartContent.appendChild(row);
+
+        // Animate the bar rendering in the next frame
+        setTimeout(() => {
+          innerBar.style.width = percentage + "%";
+        }, 50);
+      });
+    }
+
+    // Render table data with pagination
+    function renderTable() {
+      const tableBody = document.getElementById("table-body");
+      tableBody.innerHTML = "";
+
+      const startIdx = (currentPage - 1) * pageSize;
+      const endIdx = startIdx + pageSize;
+      const paginatedData = currentFilteredData.slice(startIdx, endIdx);
+
+      if (paginatedData.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="4" class="empty-state">No matching helper distribution records found. Adjust your filters or query string.</td></tr>';
+        document.getElementById("showing-entries-label").innerText = "Showing 0 entries";
+        document.getElementById("btn-prev").disabled = true;
+        document.getElementById("btn-next").disabled = true;
+        return;
+      }
+
+      paginatedData.forEach(item => {
+        const tr = document.createElement("tr");
+        
+        const tdCategory = document.createElement("td");
+        tdCategory.innerText = item.categoryName;
+        
+        const tdState = document.createElement("td");
+        const stateBadge = document.createElement("span");
+        stateBadge.className = "table-badge";
+        stateBadge.innerText = item.state;
+        tdState.appendChild(stateBadge);
+        
+        const tdCity = document.createElement("td");
+        tdCity.innerText = item.city;
+        
+        const tdCount = document.createElement("td");
+        tdCount.style.fontWeight = "600";
+        tdCount.innerText = item.userCount.toLocaleString();
+
+        tr.appendChild(tdCategory);
+        tr.appendChild(tdState);
+        tr.appendChild(tdCity);
+        tr.appendChild(tdCount);
+        tableBody.appendChild(tr);
+      });
+
+      // Update pagination info
+      const totalEntries = currentFilteredData.length;
+      const realEndIdx = Math.min(endIdx, totalEntries);
+      document.getElementById("showing-entries-label").innerText = `Showing ${startIdx + 1} to ${realEndIdx} of ${totalEntries} entries`;
+
+      // Disable/Enable page controls
+      document.getElementById("btn-prev").disabled = currentPage === 1;
+      document.getElementById("btn-next").disabled = endIdx >= totalEntries;
+    }
+
+    function changePage(direction) {
+      currentPage += direction;
+      renderTable();
+    }
+  </script>
+</body>
+</html>

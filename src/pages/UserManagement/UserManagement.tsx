@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Users, UserCheck, Flag } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useUpdateSearchParams } from "../../hooks/useUpdateSearchParams";
 import { Filter, Download, ChevronDown } from "lucide-react";
 import {
   Menu,
@@ -28,11 +29,40 @@ import { useGetUsers, useGetUserStats } from "../../services/query/userMgt";
 
 const UserManagement = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<TabType>("client");
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("");
-  const [city, setCity] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [searchParams] = useSearchParams();
+  const updateSearchParams = useUpdateSearchParams();
+
+  const activeTab = (searchParams.get("tab") as TabType) || "client";
+  const search = searchParams.get("search") || "";
+  const status = searchParams.get("status") || "";
+  const city = searchParams.get("city") || "";
+  const kycStatus = searchParams.get("kycStatus") || "";
+  const startDate = searchParams.get("startDate") || "";
+  const endDate = searchParams.get("endDate") || "";
+  const currentPage = Number(searchParams.get("page")) || 1;
+
+  // Local input states for smooth keystroke responsiveness
+  const [searchInput, setSearchInput] = useState(search);
+  const [cityInput, setCityInput] = useState(city);
+  const [startDateInput, setStartDateInput] = useState(startDate);
+  const [endDateInput, setEndDateInput] = useState(endDate);
+
+  // Sync inputs with URL when URL changes externally (e.g. back/forward navigation)
+  useEffect(() => {
+    setSearchInput(search);
+  }, [search]);
+
+  useEffect(() => {
+    setCityInput(city);
+  }, [city]);
+
+  useEffect(() => {
+    setStartDateInput(startDate);
+  }, [startDate]);
+
+  useEffect(() => {
+    setEndDateInput(endDate);
+  }, [endDate]);
 
   const { data: userData, isPending: isLoadingUsers } = useGetUsers(
     currentPage,
@@ -41,6 +71,9 @@ const UserManagement = () => {
     activeTab,
     status.toUpperCase(),
     city,
+    kycStatus,
+    startDate,
+    endDate,
   );
 
   const { data: statsData, isPending: isLoadingStats } = useGetUserStats();
@@ -98,11 +131,19 @@ const UserManagement = () => {
   const [actionLoading, setActionLoading] = useState(false);
 
   const handleTabChange = (tab: TabType) => {
-    setActiveTab(tab);
-    setCurrentPage(1);
-    setSearch("");
-    setStatus("");
-    setCity("");
+    updateSearchParams(
+      {
+        tab,
+        page: 1,
+        search: "",
+        status: "",
+        city: "",
+        kycStatus: "",
+        startDate: "",
+        endDate: "",
+      },
+      { strategy: "replace" }
+    );
   };
 
   const openModal = (user: User, action: ActionType) => {
@@ -205,10 +246,10 @@ const UserManagement = () => {
       <div className="flex flex-col lg:flex-row gap-4 items-end">
         <div className="flex-1 w-full">
           <UserSearchBar
-            value={search}
+            value={searchInput}
             onChange={(v) => {
-              setSearch(v);
-              setCurrentPage(1);
+              setSearchInput(v);
+              updateSearchParams({ search: v, page: 1 }, { debounce: 300 });
             }}
           />
         </div>
@@ -238,8 +279,7 @@ const UserManagement = () => {
                   <MenuItem key={opt.label}>
                     <button
                       onClick={() => {
-                        setStatus(opt.value);
-                        setCurrentPage(1);
+                        updateSearchParams({ status: opt.value, page: 1 });
                       }}
                       className={`flex items-center w-full px-4 py-2.5 text-sm rounded-xl transition-colors ${
                         status === opt.value
@@ -262,15 +302,93 @@ const UserManagement = () => {
           <input
             type="text"
             placeholder="Filter by city"
-            value={city}
+            value={cityInput}
             onChange={(e) => {
-              setCity(e.target.value);
-              setCurrentPage(1);
+              const v = e.target.value;
+              setCityInput(v);
+              updateSearchParams({ city: v, page: 1 }, { debounce: 300 });
+            }}
+            className="w-full h-12 px-4 rounded-full border border-[#F2F4F7] bg-white text-[#101828] text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+          />
+        </div>
+        <div className="w-full lg:w-52">
+          <label className="block text-xs font-medium text-gray-500 mb-1 ml-1">
+            KYC Status
+          </label>
+          <Menu as="div" className="relative">
+            <MenuButton className="flex items-center justify-between w-full h-12 px-5 rounded-full border border-[#F2F4F7] bg-white text-[#101828] text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition hover:border-[#D0D5DD]">
+              <span className="capitalize">
+                {kycStatus === ""
+                  ? "All KYC"
+                  : kycStatus === "awaiting_otp"
+                  ? "Awaiting OTP"
+                  : kycStatus.charAt(0).toUpperCase() + kycStatus.slice(1)}
+              </span>
+              <ChevronDown size={16} className="text-[#667085]" />
+            </MenuButton>
+            <Portal>
+              <MenuItems
+                anchor="bottom start"
+                className="z-50 w-52 origin-top-right rounded-2xl bg-white p-1 shadow-2xl focus:outline-none transition duration-100 ease-out data-[closed]:scale-95 data-[closed]:opacity-0"
+              >
+                {[
+                  { label: "All KYC", value: "" },
+                  { label: "Pending", value: "pending" },
+                  { label: "Awaiting OTP", value: "awaiting_otp" },
+                  { label: "Verified", value: "verified" },
+                  { label: "Rejected", value: "rejected" },
+                ].map((opt) => (
+                  <MenuItem key={opt.label}>
+                    <button
+                      onClick={() => {
+                        updateSearchParams({ kycStatus: opt.value, page: 1 });
+                      }}
+                      className={`flex items-center w-full px-4 py-2.5 text-sm rounded-xl transition-colors ${
+                        kycStatus === opt.value
+                          ? "bg-[#F9FAFB] text-primary font-bold"
+                          : "text-[#475467] hover:bg-[#F9FAFB] hover:text-[#101828]"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  </MenuItem>
+                ))}
+              </MenuItems>
+            </Portal>
+          </Menu>
+        </div>
+        <div className="w-full lg:w-44">
+          <label className="block text-xs font-medium text-gray-500 mb-1 ml-1">
+            Start Date
+          </label>
+          <input
+            type="date"
+            value={startDateInput}
+            onChange={(e) => {
+              const v = e.target.value;
+              setStartDateInput(v);
+              updateSearchParams({ startDate: v, page: 1 });
+            }}
+            className="w-full h-12 px-4 rounded-full border border-[#F2F4F7] bg-white text-[#101828] text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+          />
+        </div>
+        <div className="w-full lg:w-44">
+          <label className="block text-xs font-medium text-gray-500 mb-1 ml-1">
+            End Date
+          </label>
+          <input
+            type="date"
+            value={endDateInput}
+            onChange={(e) => {
+              const v = e.target.value;
+              setEndDateInput(v);
+              updateSearchParams({ endDate: v, page: 1 });
             }}
             className="w-full h-12 px-4 rounded-full border border-[#F2F4F7] bg-white text-[#101828] text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
           />
         </div>
       </div>
+
 
       <UserTabs activeTab={activeTab} onChange={handleTabChange} />
 
@@ -287,7 +405,7 @@ const UserManagement = () => {
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
-        onPageChange={setCurrentPage}
+        onPageChange={(p) => updateSearchParams({ page: p })}
       />
     </div>
   );

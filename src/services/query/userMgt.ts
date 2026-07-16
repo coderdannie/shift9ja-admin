@@ -19,6 +19,9 @@ export const useGetUsers = (
   role = '',
   status = '',
   city = '',
+  kycStatus = '',
+  startDate = '',
+  endDate = '',
   options?: Partial<UseQueryOptions<ApiResponse<PaginatedData<UserListItem>>>>
 ) => {
   const { data, isPending, isError, refetch } = useQuery({
@@ -30,6 +33,9 @@ export const useGetUsers = (
       role,
       status,
       city,
+      kycStatus,
+      startDate,
+      endDate,
     ],
     queryFn: getUsers,
     ...options,

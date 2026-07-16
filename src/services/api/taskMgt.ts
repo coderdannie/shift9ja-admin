@@ -34,3 +34,7 @@ export const resolveSOSAlert = async (uuid: string, payload: { status: string; r
   return res.data;
 };
 
+export const cancelTask = async (uuid: string, payload: { reason: string }): Promise<ApiResponse<any>> => {
+  const res = await axiosInstance.post(API.CANCEL_TASK(uuid), payload);
+  return res.data;
+};
