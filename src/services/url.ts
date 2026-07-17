@@ -103,3 +103,9 @@ export const GET_CLOUDINARY_SIGNATURE = "admin/cloudinary/signature";
 // Webhooks
 export const GET_WEBHOOKS = "admin/webhooks";
 export const RETRY_WEBHOOK = (uuid: string) => `admin/webhooks/${uuid}/retry`;
+
+// Cron Job Management
+export const GET_CRON_JOBS = "admin/cron";
+export const START_CRON_JOB = (name: string) => `admin/cron/${name}/start`;
+export const STOP_CRON_JOB = (name: string) => `admin/cron/${name}/stop`;
+export const TRIGGER_CRON_JOB = (name: string) => `admin/cron/${name}/trigger`;

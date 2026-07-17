@@ -31,5 +31,6 @@ export const PRIVATE_PATHS = {
   SETTINGS: "/settings",
   WEBHOOKS: "/webhooks",
   SOS_ALERTS: "/sos-alerts",
+  CRON_JOBS: "/cron-jobs",
 };
 
