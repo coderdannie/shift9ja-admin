@@ -73,6 +73,9 @@ const SOSAlerts = Loadable(lazy(() => import("../pages/SOSAlerts/SOSAlerts")));
 const NotificationsList = Loadable(
   lazy(() => import("../pages/Notifications/NotificationsList")),
 );
+const CronJobManagement = Loadable(
+  lazy(() => import("../pages/CronJobManagement/CronJobManagement")),
+);
 
 export const PUBLIC_ROUTES = [
   { path: PUBLIC_PATHS.LOGIN, element: <Login /> },
@@ -119,6 +122,7 @@ export const PRIVATE_ROUTES = [
   { path: PRIVATE_PATHS.WEBHOOKS, element: <WebhookManagement />, permission: 'webhook_management.view_webhooks' },
   { path: PRIVATE_PATHS.SOS_ALERTS, element: <SOSAlerts />, permission: 'task_management.view_tasks' },
   { path: PRIVATE_PATHS.NOTIFICATIONS, element: <NotificationsList />, permission: 'task_management.view_tasks' },
+  { path: PRIVATE_PATHS.CRON_JOBS, element: <CronJobManagement />, permission: 'settings.manage_cron' },
   { path: "/", element: <Navigate to={PRIVATE_PATHS.DASHBOARD} replace /> },
   { path: "*", element: <Navigate to={PRIVATE_PATHS.DASHBOARD} replace /> },
 ];
