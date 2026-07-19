@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Loader2, MessageCircle, Paperclip, CheckCheck, ChevronLeft, UserX, AlertCircle, HelpCircle } from 'lucide-react';
+import { Send, Loader2, MessageCircle, Paperclip, CheckCheck, ChevronLeft, UserX, AlertCircle, HelpCircle, Copy } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 import { PRIVATE_PATHS } from '../../../routes/constants';
 import { socketService } from '../../../services/socketService';
 import {
@@ -10,7 +11,7 @@ import {
   useGetAdminChats,
 } from '../../../services/query/chat';
 import type { Chat, ChatMessage } from '../../../types/chat';
-import { format } from 'date-fns';
+import { format, isSameDay, isToday, isYesterday } from 'date-fns';
 import { useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '../../../services/queryKeys';
 
@@ -303,7 +304,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationUuid, title =
             <Loader2 className="w-5 h-5 text-primary animate-spin" />
           </div>
         )}
-        {messages.map(msg => {
+        {messages.map((msg, index) => {
           const isMe = msg.senderType === 'ADMIN';
           const senderName = msg.adminSender
             ? `${msg.adminSender.firstName} ${msg.adminSender.lastName}`
@@ -313,10 +314,35 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationUuid, title =
             ? `${msg.sender.firstName} ${msg.sender.lastName}`
             : 'User';
 
+          let dateDivider = null;
+          const currentDate = msg.createdAt;
+          const prevDate = index > 0 ? messages[index - 1].createdAt : null;
+          
+          if (currentDate) {
+            const current = new Date(currentDate);
+            const prev = prevDate ? new Date(prevDate) : null;
+            
+            if (!prev || !isSameDay(current, prev)) {
+              let label = format(current, "MMMM d, yyyy");
+              if (isToday(current)) label = "Today";
+              else if (isYesterday(current)) label = "Yesterday";
+              
+              dateDivider = (
+                <div className="flex justify-center my-6">
+                  <span className="bg-white/80 backdrop-blur-sm border border-gray-200 text-[#4a4a4a] text-[10px] font-bold px-3 py-1.5 rounded-full shadow-sm uppercase tracking-wide">
+                    {label}
+                  </span>
+                </div>
+              );
+            }
+          }
+
           return (
-            <div key={msg.uuid || msg.tempId} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[80%] flex flex-col gap-1 ${isMe ? 'items-end' : 'items-start'}`}>
-                {!isMe && (
+            <React.Fragment key={msg.uuid || msg.tempId}>
+              {dateDivider}
+              <div className={`flex ${isMe ? 'justify-end' : 'justify-start'} mb-4`}>
+                <div className={`max-w-[80%] flex flex-col gap-1 ${isMe ? 'items-end' : 'items-start'}`}>
+                  {!isMe && (
                   <span
                     onClick={() => {
                       if (msg.sender?.uuid) {
@@ -332,25 +358,54 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationUuid, title =
                     {senderName}
                   </span>
                 )}
-                <div
-                  className={`p-3 rounded-2xl text-[13px] shadow-sm relative ${
-                    isMe
-                      ? 'bg-[#dcf8c6] text-[#101828] rounded-tr-none border border-[#c3e6a0]'
-                      : 'bg-white text-[#101828] border border-[#F2F4F7] rounded-tl-none'
-                  }`}
-                >
-                  {msg.type === 'image' ? (
-                    <img src={msg.content} alt="Attachment" className="max-w-full rounded-lg cursor-pointer" onClick={() => window.open(msg.content, '_blank')} />
-                  ) : (
-                    <p className="leading-relaxed whitespace-pre-wrap">{msg.content}</p>
-                  )}
-                  <div className={`flex items-center gap-1.5 text-[9px] mt-1 font-medium ${isMe ? 'justify-end text-[#667781]' : 'justify-start text-[#667781]'}`}>
-                    {format(new Date(msg.createdAt), 'HH:mm')}
-                    {isMe && <CheckCheck size={12} className={msg.status === 'sent' ? 'text-blue-500' : 'text-[#667781]'} />}
+                  <div
+                    className={`p-3 rounded-2xl text-[13px] shadow-sm relative group ${
+                      isMe
+                        ? 'bg-[#dcf8c6] text-[#101828] rounded-tr-none border border-[#c3e6a0]'
+                        : 'bg-white text-[#101828] border border-[#F2F4F7] rounded-tl-none'
+                    }`}
+                  >
+                    {msg.type === 'image' ? (
+                      <img src={msg.content} alt="Attachment" className="max-w-full rounded-lg cursor-pointer" onClick={() => window.open(msg.content, '_blank')} />
+                    ) : (
+                      <p className="leading-relaxed whitespace-pre-wrap" style={{ wordBreak: 'break-word' }}>
+                        {msg.content.split(/(https?:\/\/[^\s]+)/g).map((part, i) =>
+                          /(https?:\/\/[^\s]+)/.test(part) ? (
+                            <a
+                              key={i}
+                              href={part}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-500 hover:underline underline-offset-2"
+                            >
+                              {part}
+                            </a>
+                          ) : (
+                            part
+                          )
+                        )}
+                      </p>
+                    )}
+                    <div className={`flex items-center gap-1.5 text-[9px] mt-1 font-medium ${isMe ? 'justify-end text-[#667781]' : 'justify-start text-[#667781]'}`}>
+                      {msg.type === 'text' && (
+                        <button 
+                          onClick={() => {
+                            navigator.clipboard.writeText(msg.content);
+                            toast.success('Message copied!');
+                          }}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-black/5 rounded text-gray-500"
+                          title="Copy message"
+                        >
+                          <Copy size={12} />
+                        </button>
+                      )}
+                      {format(new Date(msg.createdAt), 'HH:mm')}
+                      {isMe && <CheckCheck size={12} className={msg.status === 'sent' ? 'text-blue-500' : 'text-[#667781]'} />}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </React.Fragment>
           );
         })}
         {isTyping && (
@@ -386,10 +441,18 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationUuid, title =
                 onChange={e => setInputText(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSend()}
                 className="flex-1 bg-transparent border-none outline-none text-sm py-3"
+                spellCheck={true}
+                autoCorrect="on"
+                autoCapitalize="sentences"
               />
             </div>
-            <button onClick={handleSend} disabled={!inputText.trim()} className={`p-3 rounded-full transition-all shadow-md ${inputText.trim() ? 'bg-primary text-white hover:scale-105 active:scale-95' : 'bg-gray-200 text-gray-400'}`}>
-              <Send size={20} fill={inputText.trim() ? 'currentColor' : 'none'} />
+            <button 
+              type="button" 
+              onClick={handleSend} 
+              disabled={inputText.trim().length === 0} 
+              className={`p-3 rounded-full transition-all shadow-md shrink-0 flex items-center justify-center ${inputText.trim().length > 0 ? 'bg-primary text-white hover:scale-105 active:scale-95' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+            >
+              <Send size={20} fill={inputText.trim().length > 0 ? 'currentColor' : 'none'} className="pointer-events-none" />
             </button>
           </div>
         )}

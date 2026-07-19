@@ -116,8 +116,7 @@ export const PRIVATE_ROUTES = [
     element: <SystemMessages />,
     permission: 'system_communications.view_messages'
   },
-  { path: PRIVATE_PATHS.ADMIN_CHATS, element: <AdminChat />, permission: 'chats.view_chats' },
-  { path: PRIVATE_PATHS.ADMIN_CHAT_DETAIL, element: <AdminChat />, permission: 'chats.view_chats' },
+  { path: `${PRIVATE_PATHS.ADMIN_CHATS}/:id?`, element: <AdminChat />, permission: 'chats.view_chats' },
   { path: PRIVATE_PATHS.SETTINGS, element: <Settings />, permission: 'settings.view_settings' },
   { path: PRIVATE_PATHS.WEBHOOKS, element: <WebhookManagement />, permission: 'webhook_management.view_webhooks' },
   { path: PRIVATE_PATHS.SOS_ALERTS, element: <SOSAlerts />, permission: 'task_management.view_tasks' },

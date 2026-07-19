@@ -520,19 +520,23 @@ const UserDetail: React.FC = () => {
     );
   };
 
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
   return (
     <div className="flex flex-col gap-6 w-full py-4 px-1 sm:px-4">
       <Toaster position="top-right" />
 
       {/* Header Navigation & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-2">
-        <Link
-          to={PRIVATE_PATHS.USER_MANAGEMENT}
-          className="inline-flex items-center gap-2 text-sm font-semibold text-primary transition-colors hover:text-green-700"
+        <button
+          className="inline-flex items-center gap-2 text-sm font-semibold text-primary transition-colors hover:text-green-700 cursor-pointer"
+          onClick={handleGoBack}
         >
           <ArrowLeft size={18} />
           Back to User Management
-        </Link>
+        </button>
 
         {!isEdit && (
           <div className="flex items-center gap-3">
