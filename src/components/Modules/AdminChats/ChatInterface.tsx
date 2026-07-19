@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Send, Loader2, MessageCircle, Paperclip, CheckCheck, ChevronLeft, UserX, AlertCircle, HelpCircle, Copy } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
+
+const sentAudio = new Audio('/assets/sounds/sent.mp3');
+const receivedAudio = new Audio('/assets/sounds/received.mp3');
 import { PRIVATE_PATHS } from '../../../routes/constants';
 import { socketService } from '../../../services/socketService';
 import {
@@ -126,6 +129,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationUuid, title =
           return next;
         }
         if (prev.some(m => m.uuid === msg.uuid)) return prev;
+
+        // Play received sound if the message is from someone else
+        if (msg.senderType !== 'ADMIN') {
+          receivedAudio.play().catch(e => console.error("Error playing received sound:", e));
+        }
+
         return [...prev, msg];
       });
       setTimeout(scrollToBottom, 50);
@@ -166,6 +175,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationUuid, title =
     setMessages(prev => [...prev, optimisticMsg]);
     setTimeout(scrollToBottom, 50);
     setInputText('');
+    sentAudio.play().catch(e => console.error("Error playing sent sound:", e));
     socketService.sendMessage({ conversationUuid, content, type: 'text', tempId });
   };
 
@@ -184,6 +194,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationUuid, title =
       const res = await fetch(`https://api.cloudinary.com/v1_1/${cloud_name}/image/upload`, { method: 'POST', body: formData });
       const data = await res.json();
       if (data.secure_url) {
+        sentAudio.play().catch(e => console.error("Error playing sent sound:", e));
         socketService.sendMessage({ conversationUuid, content: data.secure_url, type: 'image', tempId: `temp-img-${Date.now()}` });
       }
     } catch (err) {
