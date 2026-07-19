@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { Search, UserPlus, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AdminTable from "../../components/Modules/Admins/AdminTable";
-import ConfirmModal from "../../components/common/ConfirmModal";
+import ConfirmModal from "../../components/Modals/ConfirmModal";
 import InviteAdminDrawer from "../../components/Modules/Admins/InviteAdminDrawer";
 import EditAdminDrawer from "../../components/Modules/Admins/EditAdminDrawer";
 import { PRIVATE_PATHS } from "../../routes/constants";

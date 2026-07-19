@@ -28,7 +28,7 @@ import {
   useToggleAdminStatus,
 } from "../../services/query/adminMgt";
 import { toast, Toaster } from "react-hot-toast";
-import ConfirmModal from "../../components/common/ConfirmModal";
+import ConfirmModal from "../../components/Modals/ConfirmModal";
 import EditAdminDrawer from "../../components/Modules/Admins/EditAdminDrawer";
 import { format } from "date-fns";
 

@@ -60,6 +60,7 @@ export interface User {
   uuid: string;
   firstName: string;
   lastName: string;
+  middleName: string;
   email: string;
   phoneNumber?: string;
   status?: string;
@@ -152,7 +153,7 @@ export interface PlatformActivity {
   description: string;
   metadata: ActivityMetadata;
   actorId: number;
-  actorType: 'USER' | 'ADMIN' | 'HELPER';
+  actorType: "USER" | "ADMIN" | "HELPER";
   subjectId: number;
   subjectType: string;
   createdAt: string;

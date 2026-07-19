@@ -41,6 +41,7 @@ export const getUser = async (uuid: string): Promise<ApiResponse<User>> => {
 
 export interface UpdateUserBasicInfoPayload {
   firstName?: string;
+  middleName?: string;
   lastName?: string;
   email?: string;
   phoneNumber?: string;

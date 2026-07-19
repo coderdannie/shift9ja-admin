@@ -11,7 +11,7 @@ import {
   Portal,
 } from "@headlessui/react";
 import Button from "../../components/common/Button";
-import ConfirmModal from "../../components/common/ConfirmModal";
+import ConfirmModal from "../../components/Modals/ConfirmModal";
 import Pagination from "../../components/common/Pagination";
 import UserStatsBar from "../../components/Modules/UserManagement/UserStatsBar";
 import UserSearchBar from "../../components/Modules/UserManagement/UserSearchBar";
@@ -142,7 +142,7 @@ const UserManagement = () => {
         startDate: "",
         endDate: "",
       },
-      { strategy: "replace" }
+      { strategy: "replace" },
     );
   };
 
@@ -321,8 +321,8 @@ const UserManagement = () => {
                 {kycStatus === ""
                   ? "All KYC"
                   : kycStatus === "awaiting_otp"
-                  ? "Awaiting OTP"
-                  : kycStatus.charAt(0).toUpperCase() + kycStatus.slice(1)}
+                    ? "Awaiting OTP"
+                    : kycStatus.charAt(0).toUpperCase() + kycStatus.slice(1)}
               </span>
               <ChevronDown size={16} className="text-[#667085]" />
             </MenuButton>
@@ -388,7 +388,6 @@ const UserManagement = () => {
           />
         </div>
       </div>
-
 
       <UserTabs activeTab={activeTab} onChange={handleTabChange} />
 
