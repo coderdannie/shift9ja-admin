@@ -34,6 +34,7 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
     }, { replace: true });
   };
 
+  const [assignmentTab, setAssignmentTab] = useState<'unassigned' | 'my_chats' | 'all'>('unassigned');
   const [searchQuery, setSearchQuery] = useState("");
 
   const isAll = activeTab === "all";
@@ -45,7 +46,11 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
     hasNextPage,
     isFetchingNextPage
   } = useGetInfiniteAdminChats(
-    { type: isAll ? undefined : activeTab, limit: 15 },
+    { 
+      type: isAll ? undefined : activeTab, 
+      assignment: activeTab === 'support' ? assignmentTab : undefined,
+      limit: 15 
+    },
     { refetchInterval: 15000 }
   );
 
@@ -69,7 +74,11 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
       uniqueMap.set(chat.uuid, chat);
     });
 
-    return Array.from(uniqueMap.values());
+    return Array.from(uniqueMap.values()).sort((a, b) => {
+      const timeA = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : (a.client?.lastSeen ? new Date(a.client.lastSeen).getTime() : 0);
+      const timeB = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : (b.client?.lastSeen ? new Date(b.client.lastSeen).getTime() : 0);
+      return timeB - timeA;
+    });
   };
 
   const chatsList = getMergedChats();
@@ -181,6 +190,27 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
             </button>
           ))}
         </div>
+
+        {activeTab === 'support' && (
+          <div className="flex items-center gap-2 mt-4 pt-4 border-t border-[#F2F4F7]">
+            {(['unassigned', 'my_chats', 'all'] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setAssignmentTab(tab)}
+                className={`
+                  flex-1 px-2 py-1.5 rounded-md text-[10px] font-bold capitalize transition-all border
+                  ${
+                    assignmentTab === tab
+                      ? "bg-amber-50 text-amber-700 border-amber-200 shadow-sm"
+                      : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"
+                  }
+                `}
+              >
+                {tab.replace('_', ' ')}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Chat History List */}
