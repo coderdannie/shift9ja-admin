@@ -1,9 +1,9 @@
-import React, { Fragment } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { AlertTriangle, X } from 'lucide-react';
-import Button from './Button';
+import React, { Fragment } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import { AlertTriangle, X } from "lucide-react";
+import Button from "../common/Button";
 
-export type ConfirmModalVariant = 'danger' | 'warning' | 'info';
+export type ConfirmModalVariant = "danger" | "warning" | "info";
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -17,26 +17,33 @@ interface ConfirmModalProps {
   isLoading?: boolean;
 }
 
-const variantStyles: Record<ConfirmModalVariant, {
-  icon: string; iconBg: string; confirmVariant: 'primary' | 'secondary' | 'outline' | 'danger'; confirmClass: string;
-}> = {
+const variantStyles: Record<
+  ConfirmModalVariant,
+  {
+    icon: string;
+    iconBg: string;
+    confirmVariant: "primary" | "secondary" | "outline" | "danger";
+    confirmClass: string;
+  }
+> = {
   danger: {
-    icon: 'text-[#D92D20]',
-    iconBg: 'bg-[#FEF3F2]',
-    confirmVariant: 'danger',
-    confirmClass: 'shadow-lg shadow-[#D92D20]/20',
+    icon: "text-[#D92D20]",
+    iconBg: "bg-[#FEF3F2]",
+    confirmVariant: "danger",
+    confirmClass: "shadow-lg shadow-[#D92D20]/20",
   },
   warning: {
-    icon: 'text-[#F79009]',
-    iconBg: 'bg-[#FFFAEB]',
-    confirmVariant: 'primary',
-    confirmClass: '!bg-[#F79009] !border-[#F79009] hover:!bg-[#DC6803] shadow-lg shadow-[#F79009]/20',
+    icon: "text-[#F79009]",
+    iconBg: "bg-[#FFFAEB]",
+    confirmVariant: "primary",
+    confirmClass:
+      "!bg-[#F79009] !border-[#F79009] hover:!bg-[#DC6803] shadow-lg shadow-[#F79009]/20",
   },
   info: {
-    icon: 'text-primary',
-    iconBg: 'bg-[#F0F9FF]',
-    confirmVariant: 'primary',
-    confirmClass: 'shadow-lg shadow-primary/20',
+    icon: "text-primary",
+    iconBg: "bg-[#F0F9FF]",
+    confirmVariant: "primary",
+    confirmClass: "shadow-lg shadow-primary/20",
   },
 };
 
@@ -46,9 +53,9 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   onConfirm,
   title,
   description,
-  confirmLabel = 'Confirm',
-  cancelLabel = 'Cancel',
-  variant = 'danger',
+  confirmLabel = "Confirm",
+  cancelLabel = "Cancel",
+  variant = "danger",
   isLoading = false,
 }) => {
   const styles = variantStyles[variant];
@@ -91,12 +98,17 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
                 </button>
 
                 {/* Icon */}
-                <div className={`w-14 h-14 rounded-full ${styles.iconBg} flex items-center justify-center mb-5`}>
+                <div
+                  className={`w-14 h-14 rounded-full ${styles.iconBg} flex items-center justify-center mb-5`}
+                >
                   <AlertTriangle className={styles.icon} size={26} />
                 </div>
 
                 {/* Content */}
-                <Dialog.Title as="h2" className="text-[20px] font-bold text-[#101828] mb-2 font-inter">
+                <Dialog.Title
+                  as="h2"
+                  className="text-[20px] font-bold text-[#101828] mb-2 font-inter"
+                >
                   {title}
                 </Dialog.Title>
                 <div className="mt-2">

@@ -6,6 +6,7 @@ export interface ChatParticipant {
   lastName: string;
   avatarUrl?: string;
   activeRole?: string;
+  lastSeen?: string;
 }
 
 export interface Chat {

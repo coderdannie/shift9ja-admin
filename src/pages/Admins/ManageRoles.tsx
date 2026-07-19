@@ -3,7 +3,7 @@ import { Plus, Shield, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import RoleTable from "../../components/Modules/Admins/RoleTable";
 import { PRIVATE_PATHS } from "../../routes/constants";
-import ConfirmModal from "../../components/common/ConfirmModal";
+import ConfirmModal from "../../components/Modals/ConfirmModal";
 
 import { useGetRoles, useDeleteRole } from "../../services/query/adminMgt";
 import { toast, Toaster } from "react-hot-toast";

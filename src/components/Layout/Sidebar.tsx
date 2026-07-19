@@ -105,16 +105,21 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed, onToggl
           </button>
         </div>
 
-        <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+        <nav className={`flex-1 px-4 py-4 space-y-1 ${isCollapsed ? 'overflow-visible' : 'overflow-y-auto'}`}>
           {visibleMenuItems.map((item) => (
             <div
               key={item.path}
-              title={isCollapsed ? item.label : undefined}
               onClick={() => handleNavigate(item.path)}
-              className={`sidebar-item ${isCollapsed ? 'px-0! justify-center' : ''} ${location.pathname === item.path ? 'active' : ''}`}
+              className={`sidebar-item group relative ${isCollapsed ? 'px-0! justify-center' : ''} ${location.pathname === item.path ? 'active' : ''}`}
             >
               <item.icon size={20} className="shrink-0" />
               {!isCollapsed && <span className="truncate">{item.label}</span>}
+              {isCollapsed && (
+                <div className="absolute left-[calc(100%+8px)] px-3 py-1.5 bg-gray-800 text-white text-xs font-semibold rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100] whitespace-nowrap shadow-lg translate-x-[-10px] group-hover:translate-x-0">
+                  {item.label}
+                  <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-gray-800 rotate-45 rounded-sm"></div>
+                </div>
+              )}
             </div>
           ))}
         </nav>
