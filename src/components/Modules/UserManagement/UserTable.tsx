@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { MoreVertical } from "lucide-react";
 import CustomTable from "../../common/CustomTable";
 
@@ -205,7 +206,12 @@ const UserTable: React.FC<UserTableProps> = ({
         users.map((user) => (
           <tr key={user.id} className="hover:bg-gray-50 transition-colors">
             <td className="px-6 py-4 text-[#101828] font-semibold whitespace-nowrap">
-              {user.fullName}
+              <Link
+                to={`/user-management/${user.id}`}
+                className="hover:text-primary hover:underline focus:outline-none transition-colors text-left"
+              >
+                {user.fullName}
+              </Link>
             </td>
             <td className="px-6 py-4 text-[#475467] whitespace-nowrap">
               {user.email}
