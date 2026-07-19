@@ -25,6 +25,7 @@ export interface ChatListParams {
   page?: number;
   limit?: number;
   type?: 'task' | 'dispute' | 'support';
+  assignment?: 'unassigned' | 'my_chats' | 'all';
 }
 
 export interface ChatMessage {
