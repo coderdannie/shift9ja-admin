@@ -9,10 +9,10 @@ import {
   UserX,
 } from "lucide-react";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { PRIVATE_PATHS } from "../../../routes/constants";
 import {
-  useGetAdminChats,
+  useGetInfiniteAdminChats,
   useMarkChatAsRead,
 } from "../../../services/query/chat";
 import type { Chat } from "../../../types/chat";
@@ -23,28 +23,31 @@ interface AdminChatListProps {
 
 const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<
-    "all" | "task" | "dispute" | "support"
-  >("all");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = (searchParams.get("tab") as "all" | "task" | "dispute" | "support") || "all";
+  
+  const setActiveTab = (tab: "all" | "task" | "dispute" | "support") => {
+    setSearchParams(prev => {
+      if (tab === "all") prev.delete("tab");
+      else prev.set("tab", tab);
+      return prev;
+    }, { replace: true });
+  };
+
   const [searchQuery, setSearchQuery] = useState("");
 
   const isAll = activeTab === "all";
 
-  const { data: mainChatsData, isLoading: isLoadingMain } = useGetAdminChats({
-    type: isAll ? undefined : activeTab,
-  });
-
-  const { data: supportChatsData, isLoading: isLoadingSupport } = useGetAdminChats(
-    { type: "support" },
-    { enabled: isAll }
+  const { 
+    data: chatsData, 
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useGetInfiniteAdminChats(
+    { type: isAll ? undefined : activeTab, limit: 15 },
+    { refetchInterval: 15000 }
   );
-
-  const { data: disputeChatsData, isLoading: isLoadingDisputes } = useGetAdminChats(
-    { type: "dispute" },
-    { enabled: isAll }
-  );
-
-  const isLoading = isLoadingMain || (isAll && (isLoadingSupport || isLoadingDisputes));
 
   const { mutate: markAsRead } = useMarkChatAsRead();
 
@@ -53,30 +56,20 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
       markAsRead(chat.uuid);
     }
     // Pass the full chat object as router state so ChatInterface can use it
-    navigate(`${PRIVATE_PATHS.ADMIN_CHATS}/${chat.uuid}`, {
+    navigate(`${PRIVATE_PATHS.ADMIN_CHATS}/${chat.uuid}?${searchParams.toString()}`, {
       state: { chat },
     });
   };
 
   const getMergedChats = (): Chat[] => {
-    if (!isAll) {
-      return mainChatsData?.data || [];
-    }
-
-    const allList: Chat[] = [
-      ...(mainChatsData?.data || []),
-      ...(supportChatsData?.data || []),
-      ...(disputeChatsData?.data || []),
-    ];
+    const allList = chatsData?.pages.flatMap(page => page.data) || [];
 
     const uniqueMap = new Map<string, Chat>();
     allList.forEach((chat: Chat) => {
       uniqueMap.set(chat.uuid, chat);
     });
 
-    return Array.from(uniqueMap.values()).sort(
-      (a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
-    );
+    return Array.from(uniqueMap.values());
   };
 
   const chatsList = getMergedChats();
@@ -129,6 +122,21 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
   const isUnassigned = (chat: Chat) =>
     !chat.admin && (chat.type === "support" || chat.type === "dispute");
 
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  React.useLayoutEffect(() => {
+    if (scrollRef.current) {
+      const savedScroll = sessionStorage.getItem("adminChatListScroll");
+      if (savedScroll) {
+        scrollRef.current.scrollTop = parseInt(savedScroll, 10);
+      }
+    }
+  }, []); // Run once on mount
+
+  const handleListScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    sessionStorage.setItem("adminChatListScroll", e.currentTarget.scrollTop.toString());
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -176,7 +184,11 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
       </div>
 
       {/* Chat History List */}
-      <div className="flex-1 overflow-y-auto no-scrollbar bg-gray-50/30">
+      <div 
+        ref={scrollRef}
+        onScroll={handleListScroll}
+        className="flex-1 overflow-y-auto no-scrollbar bg-gray-50/30 flex flex-col"
+      >
         {filteredChats.length > 0 ? (
           <div className="divide-y divide-[#F2F4F7]">
             {filteredChats.map((chat) => {
@@ -226,7 +238,7 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
                             : "System Chat"}
                         </h4>
                         <span className="text-[10px] text-[#98A2B3] font-medium whitespace-nowrap">
-                          {format(new Date(chat.lastMessageAt), "HH:mm")}
+                          {chat.lastMessageAt ? format(new Date(chat.lastMessageAt), "HH:mm") : ""}
                         </span>
                       </div>
 
@@ -289,15 +301,24 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
             )}
           </div>
         )}
-      </div>
 
-      {(mainChatsData?.meta?.totalPages ?? 0) > 1 && (
-        <div className="flex justify-center pt-4">
-          <p className="text-xs text-gray-400 font-medium">
-            Pagination logic to be expanded...
-          </p>
-        </div>
-      )}
+        {hasNextPage && (
+          <div className="p-4 flex justify-center mt-auto border-t border-[#F2F4F7]">
+            <button 
+              onClick={() => fetchNextPage()} 
+              disabled={isFetchingNextPage}
+              className="px-4 py-2 bg-white border border-[#EAECF0] text-[11px] font-bold rounded-lg text-gray-700 hover:bg-gray-50 shadow-sm disabled:opacity-50 transition-all flex items-center gap-2"
+            >
+              {isFetchingNextPage ? (
+                <>
+                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-500"></div>
+                  Loading...
+                </>
+              ) : 'Load older chats'}
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

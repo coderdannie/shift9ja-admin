@@ -20,6 +20,21 @@ export const useGetAdminChats = (params: ChatListParams = {}, options?: any) => 
   });
 };
 
+export const useGetInfiniteAdminChats = (params: ChatListParams = {}, options?: any) => {
+  return useInfiniteQuery<ChatListResponse, Error, InfiniteData<ChatListResponse>, any[], number>({
+    queryKey: [QUERY_KEYS.GET_ADMIN_CHATS, 'infinite', params],
+    queryFn: ({ pageParam = 1 }) => getAdminChats({ ...params, page: pageParam as number }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      if (lastPage.meta?.hasNextPage) {
+        return (lastPage.meta.page || 1) + 1;
+      }
+      return undefined;
+    },
+    ...options,
+  });
+};
+
 export const useInitiateDisputeChat = () => {
   return useMutation({
     mutationFn: initiateDisputeChat,
