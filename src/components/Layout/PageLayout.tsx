@@ -3,6 +3,7 @@ import Header from './Header';
 import Sidebar from './Sidebar';
 import authBg from '../../assets/auth-bg.png';
 import notificationSocketService from '../../services/notificationSocketService';
+import { socketService } from '../../services/socketService';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { QUERY_KEYS } from '../../services/queryKeys';
@@ -24,6 +25,7 @@ export const AuthLayout: React.FC<LayoutProps> = ({ children }) => {
 
   useEffect(() => {
     notificationSocketService.connect();
+    socketService.connect();
 
     const handleNotification = (notification: any) => {
       console.log('Real-time admin alert:', notification);
@@ -49,11 +51,32 @@ export const AuthLayout: React.FC<LayoutProps> = ({ children }) => {
       });
     };
 
+    const handleChatsUpdated = (payload: { chatUuid?: string; type?: string }) => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_ADMIN_CHATS] });
+
+      switch (payload.type) {
+        case 'new_support_ticket':
+          toast('New support ticket opened', { icon: 'ℹ️' });
+          break;
+        case 'new_dispute_ticket':
+          toast.error('New dispute ticket raised');
+          break;
+        case 'ticket_claimed':
+          queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_ADMIN_CHATS] });
+          break;
+        default:
+          break;
+      }
+    };
+
     notificationSocketService.on('admin_notification', handleNotification);
+    socketService.on('chats_updated', handleChatsUpdated);
 
     return () => {
       notificationSocketService.off('admin_notification', handleNotification);
       notificationSocketService.disconnect();
+      socketService.off('chats_updated', handleChatsUpdated);
+      socketService.disconnect();
     };
   }, [queryClient]);
 
