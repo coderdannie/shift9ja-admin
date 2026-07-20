@@ -50,8 +50,7 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
       type: isAll ? undefined : activeTab, 
       assignment: activeTab === 'support' ? assignmentTab : undefined,
       limit: 15 
-    },
-    { refetchInterval: 15000 }
+    }
   );
 
   const { mutate: markAsRead } = useMarkChatAsRead();
