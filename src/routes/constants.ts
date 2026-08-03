@@ -32,5 +32,7 @@ export const PRIVATE_PATHS = {
   WEBHOOKS: "/webhooks",
   SOS_ALERTS: "/sos-alerts",
   CRON_JOBS: "/cron-jobs",
+  SUPPORT_SESSIONS: "/support-sessions",
+  SUPPORT_SESSION_DETAIL: "/support-sessions/:id",
+  SUPPORT_FAQ: "/support-faq",
 };
-

@@ -21,7 +21,7 @@ class NotificationSocketService {
     console.log(`🔌 Initializing admin notifications socket...`);
     this.socket = io(`${SOCKET_URL}${this.namespace}`, {
       auth: { token },
-      transports: ["websocket"],
+      transports: ['polling', 'websocket'],
       reconnection: true,
       reconnectionAttempts: 5,
     });

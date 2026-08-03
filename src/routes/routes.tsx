@@ -74,7 +74,13 @@ const NotificationsList = Loadable(
   lazy(() => import("../pages/Notifications/NotificationsList")),
 );
 const CronJobManagement = Loadable(
-  lazy(() => import("../pages/CronJobManagement/CronJobManagement")),
+  lazy(() => import('../pages/CronJobManagement/CronJobManagement')),
+);
+const SupportSessions = Loadable(
+  lazy(() => import('../pages/SupportSessions/SupportSessions')),
+);
+const SupportFAQ = Loadable(
+  lazy(() => import('../pages/SupportFAQ/SupportFAQ')),
 );
 
 export const PUBLIC_ROUTES = [
@@ -122,6 +128,8 @@ export const PRIVATE_ROUTES = [
   { path: PRIVATE_PATHS.SOS_ALERTS, element: <SOSAlerts />, permission: 'task_management.view_tasks' },
   { path: PRIVATE_PATHS.NOTIFICATIONS, element: <NotificationsList />, permission: 'task_management.view_tasks' },
   { path: PRIVATE_PATHS.CRON_JOBS, element: <CronJobManagement />, permission: 'settings.manage_cron' },
-  { path: "/", element: <Navigate to={PRIVATE_PATHS.DASHBOARD} replace /> },
+  { path: `${PRIVATE_PATHS.SUPPORT_SESSIONS}/:id?`, element: <SupportSessions />, permission: 'chats.view_chats' },
+  { path: PRIVATE_PATHS.SUPPORT_FAQ, element: <SupportFAQ />, permission: 'chats.view_chats' },
+  { path: '/', element: <Navigate to={PRIVATE_PATHS.DASHBOARD} replace /> },
   { path: "*", element: <Navigate to={PRIVATE_PATHS.DASHBOARD} replace /> },
 ];
