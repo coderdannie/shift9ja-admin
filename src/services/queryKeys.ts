@@ -67,4 +67,15 @@ export const QUERY_KEYS = {
 
   // Cron Job Management
   GET_CRON_JOBS: 'GET_CRON_JOBS',
+
+  // AI Support Sessions
+  GET_SUPPORT_SESSIONS: 'GET_SUPPORT_SESSIONS',
+  GET_SUPPORT_SESSION: 'GET_SUPPORT_SESSION',
+  GET_SUPPORT_MESSAGES: 'GET_SUPPORT_MESSAGES',
+
+  // Support FAQ Management
+  GET_SUPPORT_FAQS: 'GET_SUPPORT_FAQS',
+
+  // Unanswered Query Queue
+  GET_UNANSWERED_QUEUE: 'GET_UNANSWERED_QUEUE',
 } as const;

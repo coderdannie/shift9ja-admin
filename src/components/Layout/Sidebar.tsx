@@ -18,7 +18,9 @@ import {
   ChevronRight,
   BarChart3,
   ShieldAlert,
-  Timer
+  Timer,
+  Headphones,
+  BookOpen,
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { PRIVATE_PATHS } from '../../routes/constants';
@@ -45,6 +47,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isCollapsed, onToggl
     { label: 'Dispute & Reports', icon: AlertCircle, path: PRIVATE_PATHS.DISPUTE_REPORTS, permission: 'dispute_management.view_reports' },
     { label: 'Safety & SOS', icon: ShieldAlert, path: PRIVATE_PATHS.SOS_ALERTS, permission: 'task_management.view_tasks' },
     { label: 'Admin Chat', icon: MessageSquare, path: PRIVATE_PATHS.ADMIN_CHATS, permission: 'chats.view_chats' },
+    { label: 'Support Sessions', icon: Headphones, path: PRIVATE_PATHS.SUPPORT_SESSIONS, permission: 'chats.view_chats' },
+    { label: 'Support FAQ', icon: BookOpen, path: PRIVATE_PATHS.SUPPORT_FAQ, permission: 'chats.view_chats' },
     { label: 'System Messages', icon: Bell, path: PRIVATE_PATHS.SYSTEM_MESSAGES, permission: 'system_communications.view_messages' },
     { label: 'Webhooks', icon: Terminal, path: PRIVATE_PATHS.WEBHOOKS, permission: 'webhook_management.view_webhooks' },
     { label: 'Cron Jobs', icon: Timer, path: PRIVATE_PATHS.CRON_JOBS, permission: 'settings.manage_cron' },

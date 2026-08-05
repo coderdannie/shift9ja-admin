@@ -109,3 +109,32 @@ export const GET_CRON_JOBS = "admin/cron";
 export const START_CRON_JOB = (name: string) => `admin/cron/${name}/start`;
 export const STOP_CRON_JOB = (name: string) => `admin/cron/${name}/stop`;
 export const TRIGGER_CRON_JOB = (name: string) => `admin/cron/${name}/trigger`;
+
+// AI Support Sessions
+export const GET_SUPPORT_SESSIONS = "admin/support/sessions";
+export const GET_SUPPORT_SESSION = (uuid: string) => `admin/support/sessions/${uuid}`;
+export const CLAIM_SUPPORT_SESSION = (uuid: string) => `admin/support/sessions/${uuid}/claim`;
+export const RESOLVE_SUPPORT_SESSION = (uuid: string) => `admin/support/sessions/${uuid}/resolve`;
+export const RETURN_SUPPORT_SESSION_TO_BOT = (uuid: string) => `admin/support/sessions/${uuid}/return-to-bot`;
+export const SUGGEST_SUPPORT_REPLY = (uuid: string) => `admin/support/sessions/${uuid}/suggest`;
+export const GET_SUPPORT_MESSAGES = (uuid: string) => `admin/support/sessions/${uuid}/messages`;
+export const SEND_SUPPORT_MESSAGE = (uuid: string) => `admin/support/sessions/${uuid}/messages`;
+
+// Support FAQ Management
+export const GET_SUPPORT_FAQS = "admin/support/faqs";
+export const CREATE_SUPPORT_FAQ = "admin/support/faqs";
+export const GET_SUPPORT_FAQ = (uuid: string) => `admin/support/faqs/${uuid}`;
+export const UPDATE_SUPPORT_FAQ = (uuid: string) => `admin/support/faqs/${uuid}`;
+export const DELETE_SUPPORT_FAQ = (uuid: string) => `admin/support/faqs/${uuid}`;
+
+// Unanswered Query Queue
+export const GET_UNANSWERED_QUEUE = 'admin/support/knowledge-base/unanswered';
+export const PROMOTE_UNANSWERED_TO_FAQ = (uuid: string) =>
+  `admin/support/knowledge-base/unanswered/${uuid}/promote`;
+
+// AI Provider Configuration
+export const GET_AI_CONFIG = "admin/support/ai-config";
+export const UPDATE_AI_CONFIG = "admin/support/ai-config";
+
+// AI Financial Analytics
+export const GET_SUPPORT_ANALYTICS_COSTS = "admin/support/analytics/costs";

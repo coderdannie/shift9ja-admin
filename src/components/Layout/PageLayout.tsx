@@ -4,9 +4,12 @@ import Sidebar from './Sidebar';
 import authBg from '../../assets/auth-bg.png';
 import notificationSocketService from '../../services/notificationSocketService';
 import { socketService } from '../../services/socketService';
+import { supportSocketService } from '../../services/supportSocketService';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { QUERY_KEYS } from '../../services/queryKeys';
+import { useNavigate } from 'react-router-dom';
+import { PRIVATE_PATHS } from '../../routes/constants';
 import { useAdminPushNotifications } from '../../hooks/useAdminPushNotifications';
 
 interface LayoutProps {
@@ -17,6 +20,7 @@ export const AuthLayout: React.FC<LayoutProps> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   // ── FCM Web Push: active for the full authenticated session ─────────────────
   // AuthLayout is only mounted when sessionStorage has a valid user token,
@@ -26,6 +30,7 @@ export const AuthLayout: React.FC<LayoutProps> = ({ children }) => {
   useEffect(() => {
     notificationSocketService.connect();
     socketService.connect();
+    supportSocketService.connect();
 
     const handleNotification = (notification: any) => {
       console.log('Real-time admin alert:', notification);
@@ -69,16 +74,56 @@ export const AuthLayout: React.FC<LayoutProps> = ({ children }) => {
       }
     };
 
+    // Spec payload: { sessionUuid: string, userId: number, reason: string }
+    const handleEscalationAlert = (payload: { sessionUuid?: string; userId?: number; reason?: string }) => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_SUPPORT_SESSIONS] });
+
+      toast(
+        (t) => (
+          <div className="flex flex-col gap-1.5 p-0.5">
+            <div className="flex items-center gap-2">
+              <span className="text-lg animate-bounce">🚨</span>
+              <p className="font-bold text-sm text-[#101828] leading-tight">
+                Session Escalated
+              </p>
+            </div>
+            <p className="text-xs text-[#475467] leading-relaxed pl-7">
+              {payload.reason || 'A user requested human support assistance.'}
+            </p>
+            {payload.sessionUuid && (
+              <button
+                onClick={() => {
+                  toast.dismiss(t.id);
+                  navigate(`${PRIVATE_PATHS.SUPPORT_SESSIONS}/${payload.sessionUuid}`);
+                }}
+                className="ml-7 mt-1 text-xs font-bold text-red-600 hover:underline text-left"
+              >
+                View session →
+              </button>
+            )}
+          </div>
+        ),
+        {
+          duration: 10000,
+          position: 'top-right',
+          style: { borderLeft: '4px solid #ef4444' },
+        },
+      );
+    };
+
     notificationSocketService.on('admin_notification', handleNotification);
     socketService.on('chats_updated', handleChatsUpdated);
+    supportSocketService.on('session_escalated', handleEscalationAlert);
 
     return () => {
       notificationSocketService.off('admin_notification', handleNotification);
       notificationSocketService.disconnect();
       socketService.off('chats_updated', handleChatsUpdated);
       socketService.disconnect();
+      supportSocketService.off('session_escalated', handleEscalationAlert);
+      supportSocketService.disconnect();
     };
-  }, [queryClient]);
+  }, [queryClient, navigate]);
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">

@@ -24,34 +24,39 @@ interface AdminChatListProps {
 const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = (searchParams.get("tab") as "all" | "task" | "dispute" | "support") || "all";
-  
+  const activeTab =
+    (searchParams.get("tab") as "all" | "task" | "dispute" | "support") ||
+    "all";
+
   const setActiveTab = (tab: "all" | "task" | "dispute" | "support") => {
-    setSearchParams(prev => {
-      if (tab === "all") prev.delete("tab");
-      else prev.set("tab", tab);
-      return prev;
-    }, { replace: true });
+    setSearchParams(
+      (prev) => {
+        if (tab === "all") prev.delete("tab");
+        else prev.set("tab", tab);
+        return prev;
+      },
+      { replace: true },
+    );
   };
 
-  const [assignmentTab, setAssignmentTab] = useState<'unassigned' | 'my_chats' | 'all'>('unassigned');
+  const [assignmentTab, setAssignmentTab] = useState<
+    "unassigned" | "my_chats" | "all"
+  >("unassigned");
   const [searchQuery, setSearchQuery] = useState("");
 
   const isAll = activeTab === "all";
 
-  const { 
-    data: chatsData, 
+  const {
+    data: chatsData,
     isLoading,
     fetchNextPage,
     hasNextPage,
-    isFetchingNextPage
-  } = useGetInfiniteAdminChats(
-    { 
-      type: isAll ? undefined : activeTab, 
-      assignment: activeTab === 'support' ? assignmentTab : undefined,
-      limit: 15 
-    }
-  );
+    isFetchingNextPage,
+  } = useGetInfiniteAdminChats({
+    type: isAll ? undefined : activeTab,
+    assignment: activeTab === "support" ? assignmentTab : undefined,
+    limit: 15,
+  });
 
   const { mutate: markAsRead } = useMarkChatAsRead();
 
@@ -60,13 +65,16 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
       markAsRead(chat.uuid);
     }
     // Pass the full chat object as router state so ChatInterface can use it
-    navigate(`${PRIVATE_PATHS.ADMIN_CHATS}/${chat.uuid}?${searchParams.toString()}`, {
-      state: { chat },
-    });
+    navigate(
+      `${PRIVATE_PATHS.ADMIN_CHATS}/${chat.uuid}?${searchParams.toString()}`,
+      {
+        state: { chat },
+      },
+    );
   };
 
   const getMergedChats = (): Chat[] => {
-    const allList = chatsData?.pages.flatMap(page => page.data) || [];
+    const allList = chatsData?.pages.flatMap((page) => page.data) || [];
 
     const uniqueMap = new Map<string, Chat>();
     allList.forEach((chat: Chat) => {
@@ -74,8 +82,16 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
     });
 
     return Array.from(uniqueMap.values()).sort((a, b) => {
-      const timeA = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : (a.client?.lastSeen ? new Date(a.client.lastSeen).getTime() : 0);
-      const timeB = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : (b.client?.lastSeen ? new Date(b.client.lastSeen).getTime() : 0);
+      const timeA = a.lastMessageAt
+        ? new Date(a.lastMessageAt).getTime()
+        : a.client?.lastSeen
+          ? new Date(a.client.lastSeen).getTime()
+          : 0;
+      const timeB = b.lastMessageAt
+        ? new Date(b.lastMessageAt).getTime()
+        : b.client?.lastSeen
+          ? new Date(b.client.lastSeen).getTime()
+          : 0;
       return timeB - timeA;
     });
   };
@@ -142,7 +158,10 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
   }, []); // Run once on mount
 
   const handleListScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    sessionStorage.setItem("adminChatListScroll", e.currentTarget.scrollTop.toString());
+    sessionStorage.setItem(
+      "adminChatListScroll",
+      e.currentTarget.scrollTop.toString(),
+    );
   };
 
   if (isLoading) {
@@ -162,6 +181,7 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
             size={18}
           />
+
           <input
             type="text"
             placeholder="Search conversations..."
@@ -190,9 +210,9 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
           ))}
         </div>
 
-        {activeTab === 'support' && (
+        {activeTab === "support" && (
           <div className="flex items-center gap-2 mt-4 pt-4 border-t border-[#F2F4F7]">
-            {(['unassigned', 'my_chats', 'all'] as const).map((tab) => (
+            {(["unassigned", "my_chats", "all"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setAssignmentTab(tab)}
@@ -205,7 +225,7 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
                   }
                 `}
               >
-                {tab.replace('_', ' ')}
+                {tab.replace("_", " ")}
               </button>
             ))}
           </div>
@@ -213,7 +233,7 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
       </div>
 
       {/* Chat History List */}
-      <div 
+      <div
         ref={scrollRef}
         onScroll={handleListScroll}
         className="flex-1 overflow-y-auto no-scrollbar bg-gray-50/30 flex flex-col"
@@ -232,8 +252,8 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
                       activeId === chat.uuid
                         ? "bg-white border-primary shadow-sm"
                         : unassigned
-                        ? "border-amber-400 bg-amber-50/40 hover:bg-amber-50/70"
-                        : "border-transparent hover:border-gray-200"
+                          ? "border-amber-400 bg-amber-50/40 hover:bg-amber-50/70"
+                          : "border-transparent hover:border-gray-200"
                     }
                   `}
                 >
@@ -267,7 +287,9 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
                             : "System Chat"}
                         </h4>
                         <span className="text-[10px] text-[#98A2B3] font-medium whitespace-nowrap">
-                          {chat.lastMessageAt ? format(new Date(chat.lastMessageAt), "HH:mm") : ""}
+                          {chat.lastMessageAt
+                            ? format(new Date(chat.lastMessageAt), "HH:mm")
+                            : ""}
                         </span>
                       </div>
 
@@ -333,8 +355,8 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
 
         {hasNextPage && (
           <div className="p-4 flex justify-center mt-auto border-t border-[#F2F4F7]">
-            <button 
-              onClick={() => fetchNextPage()} 
+            <button
+              onClick={() => fetchNextPage()}
               disabled={isFetchingNextPage}
               className="px-4 py-2 bg-white border border-[#EAECF0] text-[11px] font-bold rounded-lg text-gray-700 hover:bg-gray-50 shadow-sm disabled:opacity-50 transition-all flex items-center gap-2"
             >
@@ -343,7 +365,9 @@ const AdminChatList: React.FC<AdminChatListProps> = ({ activeId }) => {
                   <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-500"></div>
                   Loading...
                 </>
-              ) : 'Load older chats'}
+              ) : (
+                "Load older chats"
+              )}
             </button>
           </div>
         )}

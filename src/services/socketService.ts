@@ -21,7 +21,7 @@ class SocketService {
     console.log(`🔌 Initializing admin chat socket...`);
     this.socket = io(`${SOCKET_URL}${this.namespace}`, {
       auth: { token },
-      transports: ["websocket"],
+      transports: ['polling', 'websocket'],
       reconnection: true,
       reconnectionAttempts: 5,
     });
