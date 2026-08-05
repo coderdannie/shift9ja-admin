@@ -94,7 +94,7 @@ const SupportSessionList: React.FC<Props> = ({ activeId }) => {
         if (statusFilter !== "all" && s.status !== statusFilter) return false;
         if (!searchQuery) return true;
         const q = searchQuery.toLowerCase();
-        const name = `${s.userName || ''}`.toLowerCase();
+        const name = `${s.userName || ""}`.toLowerCase();
         return (
           name.includes(q) ||
           s.sessionId?.toLowerCase().includes(q) ||
@@ -248,7 +248,7 @@ const SupportSessionList: React.FC<Props> = ({ activeId }) => {
                       <h4
                         className={`text-xs font-bold truncate ${isActive ? "text-primary" : "text-[#101828]"}`}
                       >
-                        {session?.userName || 'Unknown User'}
+                        {session?.userName || "Unknown User"}
                       </h4>
                       <span className="text-[10px] text-[#98A2B3] whitespace-nowrap ml-1">
                         {session.lastMessageAt
