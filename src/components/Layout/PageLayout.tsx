@@ -138,7 +138,7 @@ export const AuthLayout: React.FC<LayoutProps> = ({ children }) => {
         isSidebarCollapsed={isSidebarCollapsed}
       />
       <main className={`transition-all duration-300 ease-in-out pt-[80px] ${isSidebarCollapsed ? 'lg:pl-[80px]' : 'lg:pl-[280px]'}`}>
-        <div className="p-4 md:p-8">
+        <div className="p-4 md:p-8 max-w-[1600px] mx-auto">
           {children}
         </div>
       </main>
