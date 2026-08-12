@@ -85,8 +85,8 @@ export const useGetInfiniteSupportMessages = (
     queryFn: ({ pageParam }) =>
       getSupportMessages(uuid, { before: pageParam, limit }),
     initialPageParam: null,
-    getNextPageParam: (lastPage) => lastPage.meta.nextCursor ?? undefined,
-    enabled: false, // Backend does not have a history endpoint yet, so this avoids 404 errors
+    getNextPageParam: (lastPage) => lastPage?.meta?.nextCursor ?? undefined,
+    enabled: !!uuid,
   });
 };
 
