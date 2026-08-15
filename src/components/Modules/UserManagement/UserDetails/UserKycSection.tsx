@@ -7,6 +7,7 @@ interface UserKycSectionProps {
   isKycReviewer: boolean;
   setIsApproveOpen: (isOpen: boolean) => void;
   setIsRejectOpen: (isOpen: boolean) => void;
+  setIsRetryOpen: (isOpen: boolean) => void;
 }
 
 const UserKycSection: React.FC<UserKycSectionProps> = ({
@@ -14,6 +15,7 @@ const UserKycSection: React.FC<UserKycSectionProps> = ({
   isKycReviewer,
   setIsApproveOpen,
   setIsRejectOpen,
+  setIsRetryOpen,
 }) => {
   return (
     <div className="mb-12 bg-white rounded-3xl border border-[#F2F4F7] p-4 sm:p-8 shadow-sm">
@@ -50,13 +52,19 @@ const UserKycSection: React.FC<UserKycSectionProps> = ({
                   label="Approve"
                   variant="primary"
                   onClick={() => setIsApproveOpen(true)}
-                  className="!py-1.5 !px-4 text-xs font-bold shadow-sm"
+                  className="!py-1.5 !px-4 text-xs font-bold shadow-sm bg-green-600 hover:bg-green-700"
                 />
                 <Button
                   label="Reject"
                   variant="danger"
                   onClick={() => setIsRejectOpen(true)}
                   className="!py-1.5 !px-4 text-xs font-bold shadow-sm"
+                />
+                <Button
+                  label="Retry"
+                  variant="primary"
+                  onClick={() => setIsRetryOpen(true)}
+                  className="!py-1.5 !px-4 text-xs font-bold shadow-sm bg-blue-600 hover:bg-blue-700"
                 />
               </div>
             )}

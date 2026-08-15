@@ -11,6 +11,8 @@ export const UPDATE_USER_BASIC_INFO = (uuid: string) =>
   `admin/users/${uuid}/basic-info`;
 export const UPDATE_USER_KYC_STATUS = (uuid: string) =>
   `admin/users/${uuid}/kyc-status`;
+export const RETRY_USER_KYC = (uuid: string) =>
+  `admin/users/${uuid}/retry-kyc`;
 
 // Task Management
 export const GET_TASKS = "admin/tasks";

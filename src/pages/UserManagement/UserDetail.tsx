@@ -34,8 +34,10 @@ import {
   useGetUser,
   useUpdateUser,
   useUpdateUserKycStatus,
+  useRetryUserKyc,
 } from "../../services/query/userMgt";
 import KycRejectModal from "../../components/Modals/KycRejectModal";
+import KycRetryModal from "../../components/Modals/KycRetryModal";
 import GalleryLightboxModal from "../../components/Modals/GalleryLightboxModal";
 import TaskStatRow from "../../components/Modules/UserManagement/UserDetails/TaskStatRow";
 import WalletCard from "../../components/Modules/UserManagement/UserDetails/WalletCard";
@@ -57,6 +59,8 @@ const UserDetail: React.FC = () => {
   const { mutate: updateUser, isPending: isUpdating } = useUpdateUser(id || "");
   const { mutate: updateKycStatus, isPending: isUpdatingKyc } =
     useUpdateUserKycStatus(id || "");
+  const { mutate: retryUserKyc, isPending: isRetryingKyc } =
+    useRetryUserKyc(id || "");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSuspending, setIsSuspending] = useState(false);
@@ -70,6 +74,7 @@ const UserDetail: React.FC = () => {
 
   const [isApproveOpen, setIsApproveOpen] = useState(false);
   const [isRejectOpen, setIsRejectOpen] = useState(false);
+  const [isRetryOpen, setIsRetryOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
 
   const adminUserJson = sessionStorage.getItem("user");
@@ -106,6 +111,17 @@ const UserDetail: React.FC = () => {
         onSuccess: () => {
           setIsRejectOpen(false);
           setRejectionReason("");
+        },
+      },
+    );
+  };
+
+  const handleRetryKyc = (type: string, idNumber: string) => {
+    retryUserKyc(
+      { type, idNumber },
+      {
+        onSuccess: () => {
+          setIsRetryOpen(false);
         },
       },
     );
@@ -553,6 +569,7 @@ const UserDetail: React.FC = () => {
               isKycReviewer={isKycReviewer}
               setIsApproveOpen={setIsApproveOpen}
               setIsRejectOpen={setIsRejectOpen}
+              setIsRetryOpen={setIsRetryOpen}
             />
 
             <UserProfileSection
@@ -609,6 +626,19 @@ const UserDetail: React.FC = () => {
           setRejectionReason={setRejectionReason}
           isUpdatingKyc={isUpdatingKyc}
           handleReject={handleReject}
+        />
+      )}
+
+      {/* KYC Retry Modal */}
+      {user && (
+        <KycRetryModal
+          isOpen={isRetryOpen}
+          onClose={() => setIsRetryOpen(false)}
+          userFullName={user.fullName}
+          defaultType={user.kycVerification?.type || ""}
+          defaultIdNumber={user.kycVerification?.idNumber || ""}
+          isRetrying={isRetryingKyc}
+          handleRetry={handleRetryKyc}
         />
       )}
 

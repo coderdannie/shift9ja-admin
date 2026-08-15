@@ -7,6 +7,8 @@ import {
   updateUser,
   type UpdateUserBasicInfoPayload,
   updateUserKycStatus,
+  retryUserKyc,
+  type RetryKycPayload,
 } from '../api/userMgt';
 import { QUERY_KEYS } from '../queryKeys';
 import type { ApiResponse, PaginatedData, UserListItem, UserStats, User } from '../../types';
@@ -92,6 +94,21 @@ export const useUpdateUserKycStatus = (uuid: string) => {
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || 'Failed to update user KYC status');
+    },
+  });
+};
+
+export const useRetryUserKyc = (uuid: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: RetryKycPayload) => retryUserKyc(uuid, payload),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_USER_DETAILS, uuid] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_USERS] });
+      toast.success(data.message || 'User KYC data retrieved successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to retry KYC verification');
     },
   });
 };

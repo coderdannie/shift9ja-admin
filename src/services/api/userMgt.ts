@@ -72,3 +72,16 @@ export const updateUserKycStatus = async (
   const res = await axiosInstance.patch(API.UPDATE_USER_KYC_STATUS(uuid), payload);
   return res.data;
 };
+
+export interface RetryKycPayload {
+  type: string;
+  idNumber: string;
+}
+
+export const retryUserKyc = async (
+  uuid: string,
+  payload: RetryKycPayload
+): Promise<ApiResponse<any>> => {
+  const res = await axiosInstance.post(API.RETRY_USER_KYC(uuid), payload);
+  return res.data;
+};
