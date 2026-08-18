@@ -21,6 +21,7 @@ const TABS: { key: TaskTabType; label: string }[] = [
   { key: "completed", label: "Completed" },
   { key: "paid", label: "Paid" },
   { key: "disputed", label: "Disputed" },
+  { key: "cancelled", label: "Cancelled" },
 ];
 
 const TaskTabs: React.FC<TaskTabsProps> = ({ activeTab, onChange }) => (

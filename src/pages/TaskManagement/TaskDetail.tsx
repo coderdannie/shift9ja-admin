@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   ArrowLeft,
@@ -13,7 +13,10 @@ import {
   ExternalLink,
   Download,
   Tag,
+  Copy,
+  Check,
 } from "lucide-react";
+import toast, { Toaster } from "react-hot-toast";
 import { PRIVATE_PATHS } from "../../routes/constants";
 import Button from "../../components/common/Button";
 
@@ -185,8 +188,17 @@ const TaskDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: taskData, isPending: isLoading } = useGetTaskDetails(id || "");
+  const [copied, setCopied] = useState(false);
 
   const task = taskData?.data;
+
+  const handleCopyUuid = () => {
+    if (!task?.uuid) return;
+    navigator.clipboard.writeText(task.uuid);
+    setCopied(true);
+    toast.success("Task UUID copied to clipboard");
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleDownload = async (url: string, filename: string) => {
     try {
@@ -235,12 +247,10 @@ const TaskDetail: React.FC = () => {
   }
 
   const status = statusConfig[task.status] ?? statusConfig.open;
-  const taskShortId = String(task.uuid || "")
-    .split("-")[0]
-    .toUpperCase();
 
   return (
     <div className="flex flex-col gap-8 max-w-6xl">
+      <Toaster position="top-right" />
       <Link
         to={PRIVATE_PATHS.TASK_MANAGEMENT}
         className="inline-flex items-center gap-2 text-sm font-bold text-primary hover:gap-3 transition-all w-fit"
@@ -252,16 +262,30 @@ const TaskDetail: React.FC = () => {
       {/* Header section */}
       <div className="bg-white p-8 rounded-2xl border border-[#F2F4F7] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex flex-col gap-2 max-w-2xl">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <span
               className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase border ${status.bg} ${status.text} ${status.border}`}
             >
               <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
               {status.label}
             </span>
-            <span className="text-xs text-[#98A2B3] font-medium tracking-tight">
-              #{taskShortId}
-            </span>
+            <div
+              className="flex items-center gap-1.5 px-3 py-1 bg-gray-50 border border-[#EAECF0] rounded-xl cursor-pointer hover:bg-gray-100 transition-all group shadow-sm"
+              onClick={handleCopyUuid}
+              title="Click to copy full Task UUID"
+            >
+              <span className="font-mono text-xs text-[#475467]">
+                UUID: {task.uuid}
+              </span>
+              {copied ? (
+                <Check size={13} className="text-green-600" />
+              ) : (
+                <Copy
+                  size={13}
+                  className="text-[#98A2B3] group-hover:text-primary transition-colors"
+                />
+              )}
+            </div>
             <span className="w-1 h-1 bg-gray-200 rounded-full"></span>
             <span className="text-[10px] text-[#98A2B3] font-bold uppercase tracking-wide">
               Posted {safeFormat(task.createdAt, "MMM dd, yyyy")}

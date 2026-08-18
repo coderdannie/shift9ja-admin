@@ -1,5 +1,6 @@
 import React from "react";
-import { Eye, XCircle } from "lucide-react";
+import { Eye, XCircle, Copy } from "lucide-react";
+import toast from "react-hot-toast";
 import CustomTable from "../../common/CustomTable.tsx";
 
 import type { TaskItem, TaskStatus } from "../../../types/index.ts";
@@ -109,8 +110,33 @@ const TaskTable: React.FC<TaskTableProps> = ({
     ) : (
       tasks.map((task) => (
         <tr key={task.uuid} className="hover:bg-gray-50 transition-colors">
-          <td className="px-6 py-4 text-[#101828] font-semibold max-w-[220px] truncate">
-            {task.title}
+          <td className="px-6 py-4 max-w-[240px]">
+            <div className="flex flex-col gap-0.5">
+              <span
+                className="text-[#101828] font-semibold truncate hover:text-primary cursor-pointer transition-colors"
+                title={task.title}
+                onClick={() => onView(task)}
+              >
+                {task.title}
+              </span>
+              <div className="flex items-center gap-1.5 text-xs text-[#98A2B3] font-mono group/uuid">
+                <span className="truncate max-w-[140px]" title={task.uuid}>
+                  {task.uuid}
+                </span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigator.clipboard.writeText(task.uuid);
+                    toast.success("Task UUID copied");
+                  }}
+                  className="hover:text-primary transition-colors p-0.5 text-[#98A2B3]"
+                  title={`Copy: ${task.uuid}`}
+                >
+                  <Copy size={12} />
+                </button>
+              </div>
+            </div>
           </td>
           <td className="px-6 py-4 text-[#475467] whitespace-nowrap">
             {task.location?.city || "N/A"}
