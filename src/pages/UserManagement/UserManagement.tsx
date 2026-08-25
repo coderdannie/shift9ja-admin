@@ -26,6 +26,8 @@ const USERS_PER_PAGE = 20;
 type ActionType = "suspend" | "unsuspend" | "ban" | null;
 
 import { useGetUsers, useGetUserStats } from "../../services/query/userMgt";
+import axiosInstance from "../../services/axiosInstance";
+import * as API from "../../services/url";
 
 const UserManagement = () => {
   const navigate = useNavigate();
@@ -197,6 +199,154 @@ const UserManagement = () => {
 
   const modal = pendingAction ? modalConfig[pendingAction] : null;
 
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportData = async () => {
+    try {
+      setIsExporting(true);
+      const toastId = toast.loading("Preparing CSV export...");
+
+      // Backend enforces max limit of 100 per page. We paginate and fetch all matching users.
+      const buildParams = (pageNumber: number) => {
+        const params = new URLSearchParams();
+        params.append("page", String(pageNumber));
+        params.append("limit", "100");
+        if (search) params.append("search", search);
+        if (activeTab) params.append("role", activeTab);
+        if (status) params.append("status", status.toUpperCase());
+        if (city) params.append("city", city);
+        if (kycStatus) params.append("kycStatus", kycStatus);
+        if (startDate) params.append("startDate", startDate);
+        if (endDate) params.append("endDate", endDate);
+        return params;
+      };
+
+      const firstRes = await axiosInstance.get(`${API.GET_USERS}?${buildParams(1).toString()}`);
+      const firstPageItems = firstRes?.data?.data?.items || [];
+      const totalPages = firstRes?.data?.data?.meta?.totalPages || 1;
+
+      let allItems = [...firstPageItems];
+
+      if (totalPages > 1) {
+        const remainingPagePromises = [];
+        for (let p = 2; p <= totalPages; p++) {
+          remainingPagePromises.push(
+            axiosInstance.get(`${API.GET_USERS}?${buildParams(p).toString()}`)
+          );
+        }
+        const responses = await Promise.all(remainingPagePromises);
+        responses.forEach((res) => {
+          const pageItems = res?.data?.data?.items || [];
+          allItems = allItems.concat(pageItems);
+        });
+      }
+
+      if (allItems.length === 0) {
+        toast.dismiss(toastId);
+        toast.error("No users found to export");
+        setIsExporting(false);
+        return;
+      }
+
+      const headers = [
+        '"CONTACT ID"',
+        '"EMAIL"',
+        '"FIRSTNAME"',
+        '"LASTNAME"',
+        '"SMS"',
+        '"LANDLINE_NUMBER"',
+        '"WHATSAPP"',
+        '"INTERESTS"',
+      ];
+
+      const formatInterests = (item: any) => {
+        const raw =
+          item.interests ||
+          item.profile?.interests ||
+          item.profile?.skills ||
+          item.skills ||
+          item.categories ||
+          [];
+
+        let list: string[] = [];
+        if (Array.isArray(raw)) {
+          list = raw
+            .map((x: any) => (typeof x === "string" ? x : x?.name || x?.title || ""))
+            .filter(Boolean);
+        } else if (typeof raw === "string" && raw.trim()) {
+          try {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              list = parsed
+                .map((x: any) => (typeof x === "string" ? x : x?.name || x?.title || ""))
+                .filter(Boolean);
+            } else {
+              list = [raw.trim()];
+            }
+          } catch {
+            list = raw.split(",").map((s: string) => s.trim()).filter(Boolean);
+          }
+        }
+
+        if (list.length === 0) {
+          return "[]";
+        }
+
+        return `['${list.map((val) => val.replace(/'/g, "")).join("'|'")}']`;
+      };
+
+      const escapeCsv = (val: any) => {
+        if (val === null || val === undefined) return '""';
+        const str = String(val).replace(/"/g, '""');
+        return `"${str}"`;
+      };
+
+      const csvRows = [headers.join(",")];
+
+      allItems.forEach((item: any) => {
+        const contactId = item.id || item.uuid || "";
+        const email = item.email || "";
+        const firstName = item.firstName || "";
+        const lastName = item.lastName || "";
+        const phone = item.phoneNumber ? String(item.phoneNumber).trim() : "";
+        const interests = formatInterests(item);
+
+        const row = [
+          escapeCsv(contactId),
+          escapeCsv(email),
+          escapeCsv(firstName),
+          escapeCsv(lastName),
+          escapeCsv(phone),
+          escapeCsv(phone),
+          escapeCsv(phone),
+          escapeCsv(interests),
+        ];
+
+        csvRows.push(row.join(","));
+      });
+
+      const csvContent = csvRows.join("\r\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      const timestamp = new Date().toISOString().split("T")[0];
+      link.setAttribute("download", `users-${activeTab}-${timestamp}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.dismiss(toastId);
+      toast.success(`Exported ${allItems.length} users successfully`);
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Failed to export users data");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <Toaster position="top-right" />
@@ -232,11 +382,13 @@ const UserManagement = () => {
             icon={<Filter size={18} />}
           />
           <Button
-            label="Export Data"
+            label={isExporting ? "Exporting..." : "Export Data"}
             variant="primary"
             fullWidth={false}
             className="!h-10 px-6"
             icon={<Download size={18} />}
+            onClick={handleExportData}
+            isLoading={isExporting}
           />
         </div>
       </div>
