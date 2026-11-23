@@ -35,4 +35,5 @@ export const PRIVATE_PATHS = {
   SUPPORT_SESSIONS: "/support-sessions",
   SUPPORT_SESSION_DETAIL: "/support-sessions/:id",
   SUPPORT_FAQ: "/support-faq",
+  REFERRALS_CAMPAIGNS: "/referrals-campaigns",
 };

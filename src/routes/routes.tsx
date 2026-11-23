@@ -82,6 +82,9 @@ const SupportSessions = Loadable(
 const SupportFAQ = Loadable(
   lazy(() => import('../pages/SupportFAQ/SupportFAQ')),
 );
+const ReferralCampaigns = Loadable(
+  lazy(() => import('../pages/Marketing/ReferralCampaigns')),
+);
 
 export const PUBLIC_ROUTES = [
   { path: PUBLIC_PATHS.LOGIN, element: <Login /> },
@@ -130,6 +133,7 @@ export const PRIVATE_ROUTES = [
   { path: PRIVATE_PATHS.CRON_JOBS, element: <CronJobManagement />, permission: 'settings.manage_cron' },
   { path: `${PRIVATE_PATHS.SUPPORT_SESSIONS}/:id?`, element: <SupportSessions />, permission: 'chats.view_chats' },
   { path: PRIVATE_PATHS.SUPPORT_FAQ, element: <SupportFAQ />, permission: 'chats.view_chats' },
+  { path: PRIVATE_PATHS.REFERRALS_CAMPAIGNS, element: <ReferralCampaigns /> },
   { path: '/', element: <Navigate to={PRIVATE_PATHS.DASHBOARD} replace /> },
   { path: "*", element: <Navigate to={PRIVATE_PATHS.DASHBOARD} replace /> },
 ];

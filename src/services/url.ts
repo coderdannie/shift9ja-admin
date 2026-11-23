@@ -140,3 +140,16 @@ export const UPDATE_AI_CONFIG = "admin/support/ai-config";
 
 // AI Financial Analytics
 export const GET_SUPPORT_ANALYTICS_COSTS = "admin/support/analytics/costs";
+
+// Referral & Campaign Management (Admin Marketing)
+export const GET_MARKETING_CAMPAIGNS = "admin/marketing/campaigns";
+export const CREATE_MARKETING_CAMPAIGN = "admin/marketing/campaigns";
+export const GET_MARKETING_CAMPAIGN = (uuid: string) => `admin/marketing/campaigns/${uuid}`;
+export const UPDATE_MARKETING_CAMPAIGN = (uuid: string) => `admin/marketing/campaigns/${uuid}`;
+export const UPDATE_MARKETING_CAMPAIGN_STATUS = (uuid: string) =>
+  `admin/marketing/campaigns/${uuid}/status`;
+export const GET_REFERRAL_ANALYTICS = "admin/marketing/referrals/analytics";
+export const GET_REFERRAL_FRAUD_QUARANTINE = "admin/marketing/referrals/fraud-quarantine";
+export const RESOLVE_REFERRAL_QUARANTINE = (uuid: string) =>
+  `admin/marketing/referrals/fraud-quarantine/${uuid}/resolve`;
+export const EXPORT_REFERRALS = "admin/marketing/referrals/export";
